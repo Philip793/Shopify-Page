@@ -1,9 +1,7 @@
 # Merchant Checkout Platform
 **React + Node.js | Stripe + Braintree Integration**
 
-Merchant Checkout Platform (In Progress) – Solo-developed full-stack checkout platform for a small merchant transitioning from Etsy. Features modular React components, secure Node.js backend, Stripe & Braintree integration, and responsive UI. Currently finalizing deployment to demonstrate live high-volume transaction capabilities.
-
-A full-stack, modular checkout platform enabling small merchants to securely process payments via Stripe and Braintree. Features reusable React components, responsive UI, and a Node.js backend designed for scalability and future high-volume transactions.
+Solo-developed full-stack checkout system designed to replace third-party marketplace dependence. Architected a modular React frontend and secure Node.js backend integrating Stripe and Braintree for multi-provider payment processing and scalable transaction handling.
 ---
 
 ## Overview
@@ -11,9 +9,11 @@ This project is a custom e-commerce solution for an early-stage merchant transit
 
 I developed the full-stack platform independently, designing modular React components and implementing secure Node.js backend endpoints to process multi-method payments.
 
-The architecture emphasizes **separation of concerns**, **reusable components**, and **scalability**, enabling expansion beyond marketplace platforms.
+The system was designed with clear separation between UI, state management, and payment orchestration layers, enabling maintainability, extensibility, and future integration of additional payment providers or services.
 
+This project demonstrates production-style payment architecture, secure credential handling, and scalable component design beyond tutorial-level implementations.
 ---
+
 
 ## Project Goals
 - Enable merchant independence from third-party marketplaces  
@@ -25,22 +25,23 @@ The architecture emphasizes **separation of concerns**, **reusable components**,
 ---
 
 ## Key Features
-- Implemented modular React components and reusable hooks for checkout flow
-- Integrated Stripe PaymentElement and Braintree Drop-In UI for multiple payment options
-- Optimized UI/UX and component structure for maintainability and scalability
-- Designed architecture supporting potential high-volume transactions and future growth
-- Version-controlled the project using Git/GitHub
+- Architected **reusable, component-driven React** checkout flow using **hooks** and context for centralized **state management**
+- Integrated **Stripe Payment Element** and **Braintree Drop-In** to support **card, wallet, and PayPal** payments within a unified UI
+- Designed backend **REST endpoints** to securely generate PaymentIntents and client tokens
+- Implemented **structured error handling** and loading states to ensure resilient UX during asynchronous payment flows
+- Structured codebase for extensibility, enabling additional payment providers or order services with minimal refactoring
 ---
+
 
 ## Tech Stack
 
 **Frontend:**  
-- React (Hooks, Context API)  
-- Tailwind CSS  
+- **React (Hooks, Context API)**  
+- **Tailwind CSS**  
 - component-driven architecture for maintainability 
 
 **Backend:**  
-- Node.js, Express  
+- **Node.js, Express**  
 - Stripe SDK  
 - Braintree SDK
 - Environment-based secure credentials
@@ -75,6 +76,7 @@ The architecture emphasizes **separation of concerns**, **reusable components**,
 ---
 
 ## Project Structure
+```bash
 /client
   /src
     /components
@@ -86,40 +88,47 @@ The architecture emphasizes **separation of concerns**, **reusable components**,
   routes/
   controllers/
   server.js
+```
 
 ---
 
 ## Installation & Setup
 
 ### 1. Clone the Repository
-git clone <repository-url>
-cd <project-directory>
-
+```bash
+git clone https://github.com/Philip793/Shopify-Page.git
+cd Shopify-Page
+```
 ### 2. Install Dependencies
 
 Frontend:
+```bash
 npm install
-
+```
 Backend:
+```bash
 cd server
 npm install
-
+```
 ### 3. Environment Variables
 
 Create a `.env` file inside the `server` directory:
+```bash
 STRIPE_SECRET_KEY=your_stripe_secret_key
 BRAINTREE_MERCHANT_ID=your_merchant_id
 BRAINTREE_PUBLIC_KEY=your_public_key
 BRAINTREE_PRIVATE_KEY=your_private_key
-
+```
 ### 4. Run the Application
 
 Backend:
+```bash
 node server.js
-
+```
 Frontend:
+```bash
 npm start
-
+```
 App runs locally at: http://localhost:3000
 
 ---
@@ -132,12 +141,18 @@ App runs locally at: http://localhost:3000
 
 ---
 
+## Deployment (In Progress)
+- Environment variable configuration in production
+- Secure HTTPS payment handling
+- Scalable backend hosting
+
 ## Future Enhancements
 - Order persistence with database integration
 - Merchant dashboard for transaction monitoring
 - Payment status logging & analytics
 - Unit and integration testing
 - Cloud deployment with performance optimizations
+- Currently preparing for live deployment
 
 ---
 
