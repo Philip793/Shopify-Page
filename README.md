@@ -1,70 +1,147 @@
-# Getting Started with Create React App
+# Merchant Checkout Platform
+**React + Node.js | Stripe + Braintree Integration**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Merchant Checkout Platform (In Progress) – Solo-developed full-stack checkout platform for a small merchant transitioning from Etsy. Features modular React components, secure Node.js backend, Stripe & Braintree integration, and responsive UI. Currently finalizing deployment to demonstrate live high-volume transaction capabilities.
 
-## Available Scripts
+A full-stack, modular checkout platform enabling small merchants to securely process payments via Stripe and Braintree. Features reusable React components, responsive UI, and a Node.js backend designed for scalability and future high-volume transactions.
+---
 
-In the project directory, you can run:
+## Overview
+This project is a custom e-commerce solution for an early-stage merchant transitioning from Etsy to an independent storefront. The goal was to provide greater control over branding, customer experience, and payment processing while designing the system to support future growth.
 
-### `npm start`
+I developed the full-stack platform independently, designing modular React components and implementing secure Node.js backend endpoints to process multi-method payments.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The architecture emphasizes **separation of concerns**, **reusable components**, and **scalability**, enabling expansion beyond marketplace platforms.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## Project Goals
+- Enable merchant independence from third-party marketplaces  
+- Support multiple payment providers within a unified checkout flow  
+- Maintain secure transaction handling  
+- Deliver a responsive, user-friendly experience  
+- Design for scalability and modularity
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Key Features
+- Implemented modular React components and reusable hooks for checkout flow
+- Integrated Stripe PaymentElement and Braintree Drop-In UI for multiple payment options
+- Optimized UI/UX and component structure for maintainability and scalability
+- Designed architecture supporting potential high-volume transactions and future growth
+- Version-controlled the project using Git/GitHub
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Tech Stack
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+**Frontend:**  
+- React (Hooks, Context API)  
+- Tailwind CSS  
+- component-driven architecture for maintainability 
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**Backend:**  
+- Node.js, Express  
+- Stripe SDK  
+- Braintree SDK
+- Environment-based secure credentials
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Architecture Overview
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Frontend
+- Component-based structure for checkout flow  
+- Context API for global cart state management  
+- Separation of UI components and payment logic  
+- Conditional rendering for multiple payment providers  
+- Client-side validation, error handling, and loading states  
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Backend
+- REST API endpoints for:
+  - Creating Stripe PaymentIntent  
+  - Generating Braintree client tokens  
+  - Processing Braintree transactions  
+- Secure handling of payment credentials via environment variables  
+- Server-side transaction confirmation
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+### Payment Flow
+1. User selects a payment method  
+2. Frontend requests a secure client token or payment intent from the backend  
+3. Backend communicates with Stripe or Braintree  
+4. Payment confirmation or error is returned to the UI  
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Project Structure
+/client
+  /src
+    /components
+    /context
+    /pages
+    App.js
 
-### Code Splitting
+/server
+  routes/
+  controllers/
+  server.js
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## Installation & Setup
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### 1. Clone the Repository
+git clone <repository-url>
+cd <project-directory>
 
-### Making a Progressive Web App
+### 2. Install Dependencies
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Frontend:
+npm install
 
-### Advanced Configuration
+Backend:
+cd server
+npm install
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### 3. Environment Variables
 
-### Deployment
+Create a `.env` file inside the `server` directory:
+STRIPE_SECRET_KEY=your_stripe_secret_key
+BRAINTREE_MERCHANT_ID=your_merchant_id
+BRAINTREE_PUBLIC_KEY=your_public_key
+BRAINTREE_PRIVATE_KEY=your_private_key
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### 4. Run the Application
 
-### `npm run build` fails to minify
+Backend:
+node server.js
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Frontend:
+npm start
+
+App runs locally at: http://localhost:3000
+
+---
+
+## Security & Scalability
+- Payment secrets are never exposed to the frontend
+- Tokenized payment flows using official Stripe and Braintree SDKs
+- Server-side handling of sensitive transaction logic
+- Architecture designed to support future high-volume transaction growth
+
+---
+
+## Future Enhancements
+- Order persistence with database integration
+- Merchant dashboard for transaction monitoring
+- Payment status logging & analytics
+- Unit and integration testing
+- Cloud deployment with performance optimizations
+
+---
+
+## Screenshots
+(Add screenshots of checkout UI, Stripe payment element, PayPal flow, etc.)
+
+---
