@@ -11,7 +11,7 @@ dotenv.config();
 
 // Initialize Express app
 const app = express();
-app.use(cors({ origin: "http://localhost:3000" }));  // Allow frontend at localhost:3000
+app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));  // Allow frontend URL
 app.use(bodyParser.json());                           // Parse JSON request bodies
 
 // Initialize Stripe client

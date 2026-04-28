@@ -11,7 +11,7 @@ import { loadStripe } from "@stripe/stripe-js";
 // -----------------------------
 // Initialize Stripe SDK with publishable key
 // -----------------------------
-const stripePromise = loadStripe("pk_test_51SOsktFexVFtH16aSwKB4JNawk8N2QgRhe4FTe5p6EA10JCVOZHBVKrLVQR9EmfbvxxVIfV501DxKMQUnqqdCZNS00yxqNNI0A"); // Replace with your key in .env
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_51SOsktFexVFtH16aSwKB4JNawk8N2QgRhe4FTe5p6EA10JCVOZHBVKrLVQR9EmfbvxxVIfV501DxKMQUnqqdCZNS00yxqNNI0A"); // Use environment variable
 const BraintreeDropIn = BraintreeDropInModule.default;
 
 // -----------------------------
@@ -36,7 +36,7 @@ const StripeCheckoutForm = () => {
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: "http://localhost:3000", // Redirect after payment
+          return_url: process.env.REACT_APP_URL || "http://localhost:3000", // Redirect after payment
         },
       });
 
@@ -59,7 +59,7 @@ const StripeCheckoutForm = () => {
       <PaymentElement /> {/* Stripe pre-built payment UI */}
       <button
         disabled={loading || !stripe || !elements}
-        className="mt-6 w-full bg-blue-600 text-white py-2 rounded disabled:opacity-50"
+        className="mt-6 w-full bg-burgundy-600 text-white py-2 rounded disabled:opacity-50"
       >
         {loading ? "Processing..." : "Pay now"}
       </button>
@@ -77,24 +77,29 @@ const CheckoutPage = () => {
   const [braintreeToken, setBraintreeToken] = useState(null); // Braintree client token
   const [braintreeInstance, setBraintreeInstance] = useState(null); // Drop-in UI instance
   const [braintreeLoading, setBraintreeLoading] = useState(false); // PayPal loading state
+  const [paymentMessage, setPaymentMessage] = useState(null); // Payment success/error messages
 
   // Fetch Stripe and Braintree tokens on component mount
   useEffect(() => {
     // Fetch Stripe PaymentIntent clientSecret
-    fetch("http://localhost:4242/create-payment-intent", {
+    fetch(`${process.env.REACT_APP_API_URL || "http://localhost:4242"}/create-payment-intent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount: 1000 }), // $10 AUD
     })
       .then((res) => res.json())
       .then((data) => setClientSecret(data.clientSecret))
-      .catch((err) => console.error("Stripe error:", err));
+      .catch((err) => {
+        setPaymentMessage('Failed to load Stripe payment form. Please refresh the page.');
+      });
 
     // Fetch Braintree client token for Drop-in UI
-    fetch("http://localhost:4242/braintree/token")
+    fetch(`${process.env.REACT_APP_API_URL || "http://localhost:4242"}/braintree/token`)
       .then((res) => res.json())
       .then((data) => setBraintreeToken(data.clientToken))
-      .catch((err) => console.error("Braintree error:", err));
+      .catch((err) => {
+        setPaymentMessage('Failed to load PayPal. Please refresh the page.');
+      });
   }, []);
 
   // Handle Braintree (PayPal) payment
@@ -107,7 +112,7 @@ const CheckoutPage = () => {
       const { nonce } = await braintreeInstance.requestPaymentMethod();
 
       // Send nonce and amount to backend for transaction
-      const res = await fetch("http://localhost:4242/braintree/checkout", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:4242"}/braintree/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nonce, amount: "10.00" }),
@@ -115,13 +120,12 @@ const CheckoutPage = () => {
       const data = await res.json();
 
       if (data.success) {
-        alert("PayPal Payment Successful! Transaction ID: " + data.transactionId);
+        setPaymentMessage("PayPal Payment Successful! Transaction ID: " + data.transactionId);
       } else {
-        alert("Payment failed: " + data.error);
+        setPaymentMessage("Payment failed: " + data.error);
       }
     } catch (err) {
-      console.error(err);
-      alert("Payment error: " + err.message);
+      setPaymentMessage('Payment error: ' + err.message);
     }
 
     setBraintreeLoading(false);
@@ -160,7 +164,7 @@ const CheckoutPage = () => {
           <button
             onClick={handleBraintreePurchase}
             disabled={braintreeLoading}
-            className="w-full bg-yellow-500 text-white py-2 rounded mt-4"
+            className="w-full bg-burgundy-600 text-white py-2 rounded mt-4"
           >
             {braintreeLoading ? "Processing..." : "Pay with PayPal"}
           </button>
@@ -177,6 +181,34 @@ const CheckoutPage = () => {
         </Elements>
       ) : (
         <p>Loading Stripe payment form...</p>
+      )}
+
+      {/* Payment Message Display */}
+      {paymentMessage && (
+        <div className="mt-6 p-4 bg-white rounded-lg shadow-md max-w-md mx-auto">
+          <div className="flex items-center">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
+              paymentMessage.includes('Successful') ? 'bg-green-100' : 'bg-red-100'
+            }`}>
+              <span className={`text-sm font-bold ${
+                paymentMessage.includes('Successful') ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {paymentMessage.includes('Successful') ? '✓' : '!'}
+              </span>
+            </div>
+            <p className={`text-sm ${
+              paymentMessage.includes('Successful') ? 'text-green-800' : 'text-red-800'
+            }`}>
+              {paymentMessage}
+            </p>
+          </div>
+          <button
+            onClick={() => setPaymentMessage(null)}
+            className="mt-3 text-xs text-gray-500 hover:text-gray-700"
+          >
+            Dismiss
+          </button>
+        </div>
       )}
     </div>
   );

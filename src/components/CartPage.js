@@ -14,7 +14,7 @@ const CartPage = () => {
         <h2 className="text-2xl font-semibold mb-4">Your cart is empty 🛍️</h2>
         <button
           onClick={() => navigate("/shop")}
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-6 py-2 bg-burgundy-600 text-white rounded hover:bg-burgundy-700"
         >
           Go to Shop
         </button>
@@ -62,7 +62,7 @@ const CartPage = () => {
 
         <button
           onClick={() => navigate("/checkout")}
-          className="mt-6 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
+          className="mt-6 w-full bg-burgundy-600 text-white py-3 rounded hover:bg-burgundy-700"
         >
           Proceed to Checkout
         </button>
