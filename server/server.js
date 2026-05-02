@@ -142,16 +142,14 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`Security: ${isDev ? "HTTP (dev mode)" : "HTTPS required"}`);
-  console.log(`\n✅ SECURE Payment Endpoints (Production Safe):`);
-  console.log(`   POST /create-checkout-session  - Calculates amount from cart server-side`);
-  console.log(`   POST /braintree/checkout-with-cart - Calculates amount from cart server-side`);
-  console.log(`   POST /confirm-payment - Validates payment before order creation`);
-  
-  if (isDev) {
-    console.log(`\n⚠️  DEV-ONLY Legacy Endpoints (Disabled in Production):`);
-    console.log(`   POST /create-payment-intent    - ⚠️ Accepts amount from frontend (security risk)`);
-    console.log(`   POST /braintree/checkout       - ⚠️ Accepts amount from frontend (security risk)`);
-  }
+  console.log(`\n✅ Available Payment Endpoints (All Production-Safe):`);
+  console.log(`   POST /create-checkout-session  - Stripe checkout (server-calculated amount)`);
+  console.log(`   POST /braintree/checkout-with-cart - Braintree checkout (server-calculated amount)`);
+  console.log(`   POST /confirm-payment - Validates Stripe payment before order creation`);
+  console.log(`   GET  /braintree/token - Braintree client token`);
+  console.log(`\n🗑️  Removed Legacy Endpoints (Security Risk - No Longer Available):`);
+  console.log(`   POST /create-payment-intent    - Accepted amount from frontend (REMOVED)`);
+  console.log(`   POST /braintree/checkout       - Accepted amount from frontend (REMOVED)`);
   console.log("");
 });
 
