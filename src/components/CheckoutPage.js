@@ -14,11 +14,9 @@ import SEO from "./SEO.js";
 
 // -----------------------------
 // Initialize Stripe SDK with publishable key
+// REACT_APP_STRIPE_PUBLISHABLE_KEY must be set in root .env file
 // -----------------------------
-const stripePromise = loadStripe(
-  process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY ||
-    "pk_test_51SOsktFexVFtH16aSwKB4JNawk8N2QgRhe4FTe5p6EA10JCVOZHBVKrLVQR9EmfbvxxVIfV501DxKMQUnqqdCZNS00yxqNNI0A",
-); // Use environment variable
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const BraintreeDropIn = BraintreeDropInModule.default;
 
 // -----------------------------
