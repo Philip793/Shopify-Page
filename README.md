@@ -101,35 +101,58 @@ cd Shopify-Page
 ```
 ### 2. Install Dependencies
 
-Frontend:
+From the root directory (installs both frontend and backend dependencies):
 ```bash
-npm install
-```
-Backend:
-```bash
-cd server
 npm install
 ```
 ### 3. Environment Variables
 
-Create a `.env` file inside the `server` directory:
+Create a `.env` file in the **root** directory:
 ```bash
+# Database
+MONGODB_URI=mongodb://localhost:27017/shopify_portal
+
+# Authentication
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+
+# Stripe
 STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+
+# Braintree
 BRAINTREE_MERCHANT_ID=your_merchant_id
 BRAINTREE_PUBLIC_KEY=your_public_key
 BRAINTREE_PRIVATE_KEY=your_private_key
+
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:3000
 ```
 ### 4. Run the Application
 
-Backend:
+**Backend** (from root directory):
 ```bash
-node server.js
+npm run server
 ```
-Frontend:
+
+**Frontend** (in a new terminal, from root directory):
 ```bash
 npm start
 ```
-App runs locally at: http://localhost:3000
+
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:4242
+- Health check: http://localhost:4242/health
+
+### 5. Verify MongoDB
+
+Ensure MongoDB is running locally:
+```bash
+mongod
+```
+
+Or use MongoDB Atlas for cloud database.
 
 ---
 

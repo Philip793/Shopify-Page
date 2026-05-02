@@ -115,10 +115,23 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 4242;
+const isDev = process.env.NODE_ENV !== "production";
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`Security: ${process.env.NODE_ENV === "production" ? "HTTPS required" : "HTTP (dev mode)"}`);
+  console.log(`Security: ${isDev ? "HTTP (dev mode)" : "HTTPS required"}`);
+  console.log(`\n✅ SECURE Payment Endpoints (Production Safe):`);
+  console.log(`   POST /create-checkout-session  - Calculates amount from cart server-side`);
+  console.log(`   POST /braintree/checkout-with-cart - Calculates amount from cart server-side`);
+  console.log(`   POST /confirm-payment - Validates payment before order creation`);
+  
+  if (isDev) {
+    console.log(`\n⚠️  DEV-ONLY Legacy Endpoints (Disabled in Production):`);
+    console.log(`   POST /create-payment-intent    - ⚠️ Accepts amount from frontend (security risk)`);
+    console.log(`   POST /braintree/checkout       - ⚠️ Accepts amount from frontend (security risk)`);
+  }
+  console.log("");
 });
 
 export default app;

@@ -49,6 +49,24 @@
 - ✅ Generic error messages to prevent info leakage
 - ✅ Detailed logging on server
 
+### 9. **Payment Security**
+- ✅ **Server-Side Price Calculation**: Secure endpoints calculate totals from trusted product catalog
+- ✅ **Cart Validation**: Inventory checked before payment processing
+- ✅ **Legacy Endpoint Restriction**: Endpoints accepting frontend amounts are **disabled in production**
+
+#### Secure Payment Endpoints (Production Safe)
+These endpoints calculate order totals server-side from the trusted product catalog:
+- `POST /create-checkout-session` - Stripe checkout with server-calculated amount
+- `POST /braintree/checkout-with-cart` - Braintree checkout with server-calculated amount
+- `POST /confirm-payment` - Payment validation before order creation
+
+#### ⚠️ Development-Only Legacy Endpoints
+These endpoints accept amounts from the frontend (security risk) and are **automatically disabled in production**:
+- `POST /create-payment-intent` - ⚠️ Accepts amount from frontend
+- `POST /braintree/checkout` - ⚠️ Accepts amount from frontend
+
+The legacy endpoints are restricted to `NODE_ENV !== "production"` to prevent price tampering attacks.
+
 ---
 
 ## 🚨 Production Security Checklist
@@ -202,6 +220,7 @@ Expected headers:
 | Clickjacking | ✅ Mitigated | X-Frame-Options |
 | HPP | ✅ Mitigated | hpp middleware |
 | Information Leakage | ✅ Mitigated | Error handling + helmet |
+| Payment Tampering | ✅ Mitigated | Server-side calculation, legacy endpoints disabled in prod |
 | CSRF | ⚠️ Low Risk | JWT in localStorage (stateless) |
 | MITM | ❌ Requires HTTPS | **Enable HTTPS in production** |
 
