@@ -53,7 +53,7 @@ export const createCheckoutSession = async (req, res) => {
     }
 
     // Check inventory availability before proceeding
-    const inventoryCheck = checkInventory(cartItems);
+    const inventoryCheck = await checkInventory(cartItems);
     if (!inventoryCheck.available) {
       return res.status(400).send({
         error: "Insufficient inventory",
@@ -210,7 +210,7 @@ export const confirmPayment = async (req, res) => {
     console.log("✅ Order saved:", order.orderId);
 
     // Reduce inventory after successful payment
-    const inventoryResult = reduceInventory(orderSummary.items);
+    const inventoryResult = await reduceInventory(orderSummary.items);
     if (!inventoryResult.success) {
       console.error("⚠️ Inventory reduction failed:", inventoryResult.errors);
     } else {

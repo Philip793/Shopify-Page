@@ -11,6 +11,7 @@ import paymentRoutes from "./routes/payments.js";
 import connectDB from "./config/database.js";
 import productCatalog from "./data/productCatalog.js";
 import { validateProductCatalog } from "./middleware/productValidation.js";
+import { initializeInventory } from "./services/inventoryService.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -23,6 +24,11 @@ const app = express();
 
 // Connect to MongoDB
 connectDB();
+
+// Initialize inventory from product catalog
+initializeInventory().catch(err => {
+  console.error("⚠️ Inventory initialization failed:", err.message);
+});
 
 // Security Middleware
 
