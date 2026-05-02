@@ -27,7 +27,7 @@ export const CartProvider = ({ children }) => {
         return prevCart.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
-            : item
+            : item,
         );
       }
       // Add new product with initial quantity of 1
@@ -44,6 +44,14 @@ export const CartProvider = ({ children }) => {
   };
 
   // -----------------------------
+  // clearCart
+  // Clears all items from the cart (used after successful checkout)
+  // -----------------------------
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  // -----------------------------
   // cartCount
   // Returns total number of items in the cart
   // Useful for UI badges or summaries
@@ -52,7 +60,7 @@ export const CartProvider = ({ children }) => {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, cartCount }}
+      value={{ cart, addToCart, removeFromCart, clearCart, cartCount }}
     >
       {children}
     </CartContext.Provider>

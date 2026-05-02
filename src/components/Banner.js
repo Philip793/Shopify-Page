@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 const Banner = () => {
   const [position, setPosition] = useState(0);
-  
-  const message = "10% OFF SITEWIDE • FREE SHIPPING ON ORDERS $50+ • NEW ARRIVALS EVERY WEEK • ";
+
+  const message =
+    "10% OFF SITEWIDE • FREE SHIPPING ON ORDERS $50+ • NEW ARRIVALS EVERY WEEK • ";
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -21,7 +22,7 @@ const Banner = () => {
   return (
     <div className="bg-gold-100 to-gold-200 px-4 overflow-hidden">
       <div className="relative h-6 flex items-center">
-        <div 
+        <div
           className="absolute whitespace-nowrap"
           style={{ transform: `translateX(${position}%)` }}
         >

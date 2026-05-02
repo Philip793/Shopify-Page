@@ -5,7 +5,7 @@ export const products = [
   {
     id: 1,
     name: "Oversized 25MM Cat's Eye Gemstone Damage Dice (Set of 2) - Flesh and Blood TCG ",
-    price: 24.99 ,
+    price: 24.99,
     category: "Flesh and Blood",
     description: `**US customers: Tariff charges are already included in the shipping cost. No surprise customs fees!**
 
@@ -28,9 +28,7 @@ This listing is for two dice which form a complete set to represent damage value
       " Made from authentic Cat’s Eye Gemstone, giving each die a natural shimmer that catches the light beautifully.",
       " The colour of the dice is a deep dark purple hue with silver numbering.",
       " Includes two dice — one numbered 1–6 and the other 7–12 — perfect for displaying damage in Flesh and Blood TCG.",
-      " Every die is individually checked to ensure consistent engraving depth and polish for a smooth, balanced roll."
-
-
+      " Every die is individually checked to ensure consistent engraving depth and polish for a smooth, balanced roll.",
     ],
     images: {
       thumbnail: "/images/products/1-dice-set/thumbnail.jpg",
@@ -40,23 +38,23 @@ This listing is for two dice which form a complete set to represent damage value
         "/images/products/1-dice-set/2.jpg",
         "/images/products/1-dice-set/3.jpg",
         "/images/products/1-dice-set/4.jpg",
-        "/images/products/1-dice-set/5.jpg"
-      ]
+        "/images/products/1-dice-set/5.jpg",
+      ],
     },
     image: "/images/products/1-dice-set/thumbnail.jpg", // Fallback for compatibility
     inventory: {
       inStock: true,
       quantity: 25,
-      sku: "MG-EBG-001"
+      sku: "MG-EBG-001",
     },
     ratings: {
       average: 4.8,
-      reviews: 127
+      reviews: 127,
     },
     tags: ["Flesh and Blood", "Dice", "Gemstone", "Damage Dice"],
     featured: true,
     newArrival: false,
-    bestseller: true
+    bestseller: true,
   },
   {
     id: 2,
@@ -82,11 +80,11 @@ Dice Size: 18mm
 ***Disclaimer:***
 As this product is made from natural stone, each die is unique—variations in colour, band intensity, and pattern are normal and part of the gemstone’s natural beauty. `,
     features: [
-"✅ Made from genuine gemstone, not resin or fiber-optic substitutes.",
-"✅ Natural Chatoyancy Effect – A bright, moving line of light creates a dynamic, living appearance with every roll.",
-"✅ These die are larger than standard dice which are usually 16mm for better visibility and satisfying table presence.",
-"✅ Ideal for DnD, tabletop RPGs, TCG counters, board games, and collectors.",
-"✅ Smooth, polished finish designed for both play and display."
+      "✅ Made from genuine gemstone, not resin or fiber-optic substitutes.",
+      "✅ Natural Chatoyancy Effect – A bright, moving line of light creates a dynamic, living appearance with every roll.",
+      "✅ These die are larger than standard dice which are usually 16mm for better visibility and satisfying table presence.",
+      "✅ Ideal for DnD, tabletop RPGs, TCG counters, board games, and collectors.",
+      "✅ Smooth, polished finish designed for both play and display.",
     ],
     images: {
       thumbnail: "/images/products/18-cat-d6/thumbnail.webp",
@@ -98,28 +96,28 @@ As this product is made from natural stone, each die is unique—variations in c
         "/images/products/18-cat-d6/4.jpg.webp",
         "/images/products/18-cat-d6/5.jpg.webp",
         "/images/products/18-cat-d6/6.jpg.webp",
-        "/images/products/18-cat-d6/7.jpg.webp"
-      ]
+        "/images/products/18-cat-d6/7.jpg.webp",
+      ],
     },
     image: "/images/products/18-cat-d6/thumbnail.webp", // Fallback for compatibility
     inventory: {
       inStock: true,
       quantity: 18,
-      sku: "MG-SMC-002"
+      sku: "MG-SMC-002",
     },
     ratings: {
       average: 4.9,
-      reviews: 89
+      reviews: 89,
     },
     tags: ["DnD", "TCG", "Board Game", "Gemstone", "Damage Dice"],
     featured: true,
     newArrival: true,
-    bestseller: false
+    bestseller: false,
   },
   {
     id: 3,
     name: "18MM Rainbow Frosted Crystal Glass D6 Dice – Luxury Gemstone Dice",
-    price: 23.40,
+    price: 23.4,
     category: ["DnD", "TCG", "Board Game"],
     description: `**US customers: Tariff charges are already included in the shipping cost. No surprise customs fees!**
 
@@ -133,10 +131,10 @@ Whether you need a single standout die or a coordinated set for your favourite g
 ▶Finish: Polished, light-refracting prism effect
 ▶Weight: One 18mm D6 weights approx. 15g providing a substantial weighty feel.`,
     features: [
-"✅ Premium Frosted Rainbow Crystal Glass – High-clarity glass that reflects and disperses light into vibrant colour spectra.",
-"✅ Larger than standard dice for better visibility and a satisfying weighty feel.",
-"✅ Perfect for DnD, tabletop RPGs, TCG counters, board games, and dice collectors.",
-"✅ Elegant & Durable – Smooth polished finish designed for long-term use and display."
+      "✅ Premium Frosted Rainbow Crystal Glass – High-clarity glass that reflects and disperses light into vibrant colour spectra.",
+      "✅ Larger than standard dice for better visibility and a satisfying weighty feel.",
+      "✅ Perfect for DnD, tabletop RPGs, TCG counters, board games, and dice collectors.",
+      "✅ Elegant & Durable – Smooth polished finish designed for long-term use and display.",
     ],
     images: {
       thumbnail: "/images/products/18-mm-rainbow-d6/thumbnail.webp",
@@ -149,28 +147,28 @@ Whether you need a single standout die or a coordinated set for your favourite g
         "/images/products/18-mm-rainbow-d6/5.jpg.jpg",
         "/images/products/18-mm-rainbow-d6/6.jpg.avif",
         "/images/products/18-mm-rainbow-d6/7.jpg.avif",
-        "/images/products/18-mm-rainbow-d6/8.jpg.avif"
-      ]
+        "/images/products/18-mm-rainbow-d6/8.jpg.avif",
+      ],
     },
     image: "/images/products/18-mm-rainbow-d6/thumbnail.webp", // Fallback for compatibility
     inventory: {
       inStock: true,
       quantity: 42,
-      sku: "MG-FFB-003"
+      sku: "MG-FFB-003",
     },
     ratings: {
       average: 4.7,
-      reviews: 203
+      reviews: 203,
     },
     tags: ["DnD", "TCG", "Board Game", "Glass", "Damage Dice"],
     featured: true,
     newArrival: false,
-    bestseller: true
+    bestseller: true,
   },
   {
     id: 4,
     name: "18MM Opalite Gemstone D6 Dice – Luxury Iridescent Gemstone Dice",
-    price: 18.00,
+    price: 18.0,
     category: ["DnD", "TCG", "Board Game"],
     description: `**US customers: Tariff charges are already included in the shipping cost. No surprise customs fees!**
 
@@ -189,10 +187,10 @@ Perfect for DnD, TCGs, and board games, these gemstone dice balance visual beaut
 While each die still features unique colour shifts and internal glow patterns, making every piece visually distinctive,minor variations are normal and part of the stone’s charm.
 `,
     features: [
- "✅ Crafted from polished opalite stone for a smooth, luminous finish.",
- "✅ Known for its dreamy, moonlike appearance, opalite is a favourite among collectors and players who want their dice to stand out with subtle elegance rather than bold flash.",
- "✅ Oversized Dice – Larger than standard 16mm dice for improved visibility and satisfying table presence.",
- "✅ Smooth, polished surface designed for both gameplay and display. Ideal for DnD, tabletop RPGs, TCG counters, board games, and collectors."
+      "✅ Crafted from polished opalite stone for a smooth, luminous finish.",
+      "✅ Known for its dreamy, moonlike appearance, opalite is a favourite among collectors and players who want their dice to stand out with subtle elegance rather than bold flash.",
+      "✅ Oversized Dice – Larger than standard 16mm dice for improved visibility and satisfying table presence.",
+      "✅ Smooth, polished surface designed for both gameplay and display. Ideal for DnD, tabletop RPGs, TCG counters, board games, and collectors.",
     ],
     images: {
       thumbnail: "/images/products/18mm-opa-d6/thumbnail.avif",
@@ -205,23 +203,23 @@ While each die still features unique colour shifts and internal glow patterns, m
         "/images/products/18mm-opa-d6/5.jpg.jpg",
         "/images/products/18mm-opa-d6/6.jpg.avif",
         "/images/products/18mm-opa-d6/7.jpg.jpg",
-        "/images/products/18mm-opa-d6/8.jpg.avif"
-      ]
+        "/images/products/18mm-opa-d6/8.jpg.avif",
+      ],
     },
     image: "/images/products/18mm-opa-d6/thumbnail.avif", // Fallback for compatibility
     inventory: {
       inStock: true,
       quantity: 12,
-      sku: "MG-CC-004"
+      sku: "MG-CC-004",
     },
     ratings: {
       average: 4.9,
-      reviews: 156
+      reviews: 156,
     },
     tags: ["DnD", "TCG", "Board Game", "Gemstone", "Damage Dice"],
     featured: false,
     newArrival: false,
-    bestseller: true
+    bestseller: true,
   },
   {
     id: 5,
@@ -243,7 +241,7 @@ This listing is for 1 metal resource token. This product is an unofficial, fan-m
       "▶▶ Hand-Designed Detailing: Each design element was thoughtfully hand crafted by us to offer a unique, player-focused accessory.",
       "▶▶ Premium Craftsmanship: Made from high-quality metal with a polished finish, ensuring durability and a satisfying weight in hand.",
       "▶▶ Double-Sided Design: Features unique engravings on each side to represent different resource values, streamlining your gameplay.",
-      "▶▶ Now available in two colourways - Fire and Ice!"
+      "▶▶ Now available in two colourways - Fire and Ice!",
     ],
     images: {
       thumbnail: "/images/products/metal-resource-token/thumbnail.jpg.jpg",
@@ -258,36 +256,37 @@ This listing is for 1 metal resource token. This product is an unofficial, fan-m
         "/images/products/metal-resource-token/7.jpg.webp",
         "/images/products/metal-resource-token/8.jpg.webp",
         "/images/products/metal-resource-token/9.jpg.webp",
-        "/images/products/metal-resource-token/10.jpg.jpg"
-      ]
+        "/images/products/metal-resource-token/10.jpg.jpg",
+      ],
     },
     image: "/images/products/metal-resource-token/thumbnail.jpg.jpg", // Fallback for compatibility
     inventory: {
       inStock: true,
       quantity: 35,
-      sku: "MG-PMP-005"
+      sku: "MG-PMP-005",
     },
     ratings: {
       average: 4.6,
-      reviews: 94
+      reviews: 94,
     },
     tags: ["Flesh and Blood", "social", "group", "entertainment"],
     featured: false,
     newArrival: true,
-    bestseller: false
+    bestseller: false,
   },
   {
     id: 6,
     name: "Go Again & Dominate Metal Token",
     price: 13.99,
     category: "Flesh and Blood",
-    description: "Fun and educational games for all ages. This set combines learning with entertainment to develop critical thinking and problem-solving skills.",
+    description:
+      "Fun and educational games for all ages. This set combines learning with entertainment to develop critical thinking and problem-solving skills.",
     features: [
       "6 educational games covering different subjects",
       "STEM-focused activities",
       "Progressive difficulty levels",
       "Teacher and parent guides included",
-      "Ages 8-14"
+      "Ages 8-14",
     ],
     images: {
       thumbnail: "/images/products/dom-metal-token/thumbnail.jpg",
@@ -298,35 +297,36 @@ This listing is for 1 metal resource token. This product is an unofficial, fan-m
         "/images/products/dom-metal-token/3.jpg",
         "/images/products/dom-metal-token/4.jpg",
         "/images/products/dom-metal-token/5.jpg",
-      ]
+      ],
     },
     image: "/images/products/6-educational-set/thumbnail.jpg", // Fallback for compatibility
     inventory: {
       inStock: true,
       quantity: 28,
-      sku: "MG-EDS-006"
+      sku: "MG-EDS-006",
     },
     ratings: {
       average: 4.8,
-      reviews: 178
+      reviews: 178,
     },
     tags: ["educational", "STEM", "learning", "children"],
     featured: false,
     newArrival: false,
-    bestseller: true
+    bestseller: true,
   },
   {
     id: 7,
     name: "20MM Sharp Resin FaB Resource Dice",
-    price: 9.00,
+    price: 9.0,
     category: "Puzzles",
-    description: "Challenging puzzle collection for puzzle enthusiasts. Features various difficulty levels and unique puzzle types to keep your mind sharp.",
+    description:
+      "Challenging puzzle collection for puzzle enthusiasts. Features various difficulty levels and unique puzzle types to keep your mind sharp.",
     features: [
       "10 different puzzle types included",
       "Progressive difficulty from beginner to expert",
       "High-quality puzzle materials",
       "Timer and score tracking",
-      "Ages 12+"
+      "Ages 12+",
     ],
     images: {
       thumbnail: "/images/products/20mm-resin-fab/thumbnail.jpg",
@@ -339,35 +339,36 @@ This listing is for 1 metal resource token. This product is an unofficial, fan-m
         "/images/products/20mm-resin-fab/5.jpg",
         "/images/products/20mm-resin-fab/6.jpg",
         "/images/products/20mm-resin-fab/7.jpg",
-      ]
+      ],
     },
     image: "/images/products/20mm-resin-fab/thumbnail.jpg", // Fallback for compatibility
     inventory: {
       inStock: true,
       quantity: 31,
-      sku: "MG-PMD-007"
+      sku: "MG-PMD-007",
     },
     ratings: {
       average: 4.7,
-      reviews: 112
+      reviews: 112,
     },
     tags: ["puzzle", "brain teaser", "logic", "solo"],
     featured: false,
     newArrival: true,
-    bestseller: false
+    bestseller: false,
   },
   {
     id: 8,
     name: "20MM Sharp Resin Spindown D6 Dice",
-    price: 8.00,
+    price: 8.0,
     category: "Travel Games",
-    description: "Compact and portable games perfect for travel. This collection includes magnetic and foldable games that can be played anywhere.",
+    description:
+      "Compact and portable games perfect for travel. This collection includes magnetic and foldable games that can be played anywhere.",
     features: [
       "6 travel-friendly games",
       "Magnetic pieces to prevent loss",
       "Compact carrying case",
       "Quick gameplay (15-30 minutes)",
-      "Ages 8+"
+      "Ages 8+",
     ],
     images: {
       thumbnail: "/images/products/20mm-resin-d6/thumbnail.jpg",
@@ -379,71 +380,74 @@ This listing is for 1 metal resource token. This product is an unofficial, fan-m
         "/images/products/20mm-resin-d6/4.jpg",
         "/images/products/20mm-resin-d6/5.jpg",
         "/images/products/20mm-resin-d6/6.jpg",
-        "/images/products/20mm-resin-d6/7.jpg"
-      ]
+        "/images/products/20mm-resin-d6/7.jpg",
+      ],
     },
     image: "/images/products/8-travel-games/thumbnail.jpg", // Fallback for compatibility
     inventory: {
       inStock: true,
       quantity: 58,
-      sku: "MG-TGC-008"
+      sku: "MG-TGC-008",
     },
     ratings: {
       average: 4.5,
-      reviews: 87
+      reviews: 87,
     },
     tags: ["travel", "portable", "magnetic", "compact"],
     featured: false,
     newArrival: false,
-    bestseller: false
-  }
+    bestseller: false,
+  },
 ];
 
 // Helper functions for product management
 export const getProductById = (id) => {
-  return products.find(product => product.id === parseInt(id));
+  return products.find((product) => product.id === parseInt(id));
 };
 
 export const getProductsByCategory = (category) => {
-  return products.filter(product => 
-    Array.isArray(product.category) 
+  return products.filter((product) =>
+    Array.isArray(product.category)
       ? product.category.includes(category)
-      : product.category === category
+      : product.category === category,
   );
 };
 
 export const getFeaturedProducts = () => {
-  return products.filter(product => product.featured);
+  return products.filter((product) => product.featured);
 };
 
 export const getNewArrivals = () => {
-  return products.filter(product => product.newArrival);
+  return products.filter((product) => product.newArrival);
 };
 
 export const getBestsellers = () => {
-  return products.filter(product => product.bestseller);
+  return products.filter((product) => product.bestseller);
 };
 
 export const searchProducts = (query) => {
   const lowercaseQuery = query.toLowerCase();
-  return products.filter(product => 
-    product.name.toLowerCase().includes(lowercaseQuery) ||
-    product.description.toLowerCase().includes(lowercaseQuery) ||
-    product.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery))
+  return products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(lowercaseQuery) ||
+      product.description.toLowerCase().includes(lowercaseQuery) ||
+      product.tags.some((tag) => tag.toLowerCase().includes(lowercaseQuery)),
   );
 };
 
 export const getRelatedProducts = (productId, limit = 4) => {
   const product = getProductById(productId);
   if (!product) return [];
-  
+
   return products
-    .filter(p => {
+    .filter((p) => {
       if (p.id === productId) return false;
       // Check if products share any category
       const pCats = Array.isArray(p.category) ? p.category : [p.category];
-      const prodCats = Array.isArray(product.category) ? product.category : [product.category];
-      return pCats.some(cat => prodCats.includes(cat));
+      const prodCats = Array.isArray(product.category)
+        ? product.category
+        : [product.category];
+      return pCats.some((cat) => prodCats.includes(cat));
     })
     .slice(0, limit);
 };

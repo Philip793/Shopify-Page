@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const WelcomeSection = () => {
   const navigate = useNavigate();
@@ -14,19 +14,20 @@ const WelcomeSection = () => {
               Welcome to The Ultimate Board Game Adventure
             </h1>
             <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-              Discover our carefully curated collection of board games that bring families together, 
-              challenge your mind, and create unforgettable memories. From classic strategy games 
-              to modern party favorites, we have something for every game night.
+              Discover our carefully curated collection of board games that
+              bring families together, challenge your mind, and create
+              unforgettable memories. From classic strategy games to modern
+              party favorites, we have something for every game night.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <button
-                onClick={() => navigate('/our-story')}
+                onClick={() => navigate("/our-story")}
                 className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-burgundy-600 text-white rounded-md hover:bg-burgundy-700 transition-colors font-semibold text-base sm:text-lg"
               >
                 LEARN MORE
               </button>
               <button
-                onClick={() => navigate('/shop')}
+                onClick={() => navigate("/shop")}
                 className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-burgundy-600 border-2 border-burgundy-600 rounded-md hover:bg-gold-50 transition-colors font-semibold text-base sm:text-lg"
               >
                 SHOP NOW
@@ -47,7 +48,7 @@ const WelcomeSection = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Decorative Elements */}
             <div className="absolute -top-4 -right-4 w-24 h-24 bg-gold-300 rounded-full opacity-50 blur-xl"></div>
             <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gold-400 rounded-full opacity-30 blur-2xl"></div>

@@ -1,19 +1,20 @@
-import React from 'react';
-import { Helmet } from 'react-helmet-async';
+import React from "react";
+import { Helmet } from "react-helmet-async";
 
-const SEO = ({ 
-  title, 
-  description, 
-  keywords, 
-  image, 
-  url, 
-  type = 'website',
-  structuredData = null 
+const SEO = ({
+  title,
+  description,
+  keywords,
+  image,
+  url,
+  type = "website",
+  structuredData = null,
 }) => {
-  const siteTitle = 'Magestic - Premium Board Games Store';
-  const siteDescription = 'Discover premium board games at Magestic. Quality family games, strategy games, and party games with fast shipping across Australia.';
-  const siteUrl = 'https://magestic.com.au';
-  const siteImage = 'https://magestic.com.au/og-image.jpg';
+  const siteTitle = "Magestic - Premium Board Games Store";
+  const siteDescription =
+    "Discover premium board games at Magestic. Quality family games, strategy games, and party games with fast shipping across Australia.";
+  const siteUrl = "https://magestic.com.au";
+  const siteImage = "https://magestic.com.au/og-image.jpg";
 
   const finalTitle = title ? `${title} | ${siteTitle}` : siteTitle;
   const finalDescription = description || siteDescription;
@@ -23,14 +24,14 @@ const SEO = ({
   const baseStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": siteTitle,
-    "description": siteDescription,
-    "url": siteUrl,
-    "potentialAction": {
+    name: siteTitle,
+    description: siteDescription,
+    url: siteUrl,
+    potentialAction: {
       "@type": "SearchAction",
-      "target": `${siteUrl}/search?q={search_term_string}`,
-      "query-input": "required name=search_term_string"
-    }
+      target: `${siteUrl}/search?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
   };
 
   return (
@@ -38,7 +39,13 @@ const SEO = ({
       {/* Basic Meta Tags */}
       <title>{finalTitle}</title>
       <meta name="description" content={finalDescription} />
-      <meta name="keywords" content={keywords || 'board games, family games, strategy games, party games, educational games, Australian board game store, premium games'} />
+      <meta
+        name="keywords"
+        content={
+          keywords ||
+          "board games, family games, strategy games, party games, educational games, Australian board game store, premium games"
+        }
+      />
       <meta name="author" content="Magestic" />
       <meta name="robots" content="index, follow" />
       <meta name="language" content="English" />
@@ -77,16 +84,30 @@ const SEO = ({
           {JSON.stringify(structuredData)}
         </script>
       )}
-      
+
       <script type="application/ld+json">
         {JSON.stringify(baseStructuredData)}
       </script>
 
       {/* Favicon */}
       <link rel="icon" href="/favicon.ico" />
-      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-      <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-      <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+      <link
+        rel="apple-touch-icon"
+        sizes="180x180"
+        href="/apple-touch-icon.png"
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="/favicon-32x32.png"
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="16x16"
+        href="/favicon-16x16.png"
+      />
     </Helmet>
   );
 };
