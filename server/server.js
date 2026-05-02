@@ -61,12 +61,18 @@ app.use("/api/", limiter); // Apply to all API routes
 app.use("/auth/", authLimiter); // Apply stricter limit to auth
 
 // 3. MongoDB Sanitize - Prevent NoSQL injection
-app.use(mongoSanitize({
-  replaceWith: "_",
-  onSanitize: ({ req, key }) => {
-    console.warn(`⚠️  Sanitized malicious input: ${key} from ${req.ip}`);
-  },
-}));
+// Note: Express 5 has read-only req.query, so we manually sanitize only req.body
+app.use((req, res, next) => {
+  if (req.body) {
+    req.body = mongoSanitize.sanitize(req.body, {
+      replaceWith: "_",
+      onSanitize: ({ key }) => {
+        console.warn(`⚠️  Sanitized malicious input: ${key} from ${req.ip}`);
+      },
+    });
+  }
+  next();
+});
 
 // 4. HPP - Prevent HTTP Parameter Pollution
 app.use(hpp({

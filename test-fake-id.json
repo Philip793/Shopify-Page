@@ -1,0 +1,17 @@
+{
+  "paymentIntentId": "FAKE-123",
+  "orderSummary": {
+    "total": "29.99",
+    "items": [
+      {
+        "id": 1,
+        "name": "Test",
+        "price": 29.99,
+        "quantity": 1,
+        "total": "29.99"
+      }
+    ],
+    "subtotal": "29.99",
+    "shipping": "0.00"
+  }
+}
