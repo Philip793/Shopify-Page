@@ -16,7 +16,13 @@ import SEO from "./SEO.js";
 // Initialize Stripe SDK with publishable key
 // REACT_APP_STRIPE_PUBLISHABLE_KEY must be set in root .env file
 // -----------------------------
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+const stripeKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+
+if (!stripeKey) {
+  throw new Error("Missing REACT_APP_STRIPE_PUBLISHABLE_KEY environment variable. Please set it in your .env file.");
+}
+
+const stripePromise = loadStripe(stripeKey);
 const BraintreeDropIn = BraintreeDropInModule.default;
 
 // -----------------------------
@@ -111,7 +117,39 @@ const CheckoutPage = () => {
   const { cart } = useCart();
   const { isAuthenticated, loading: authLoading } = useAuth();
 
-  // Redirect to login if not authenticated
+  // Get checkout session data from OrderSummary page
+  const clientSecret = location.state?.clientSecret;
+  const orderSummary = location.state?.orderSummary;
+
+  // Braintree state - MUST be before any early returns
+  const [braintreeToken, setBraintreeToken] = useState(null);
+  const [braintreeInstance, setBraintreeInstance] = useState(null);
+  const [braintreeLoading, setBraintreeLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Redirect if no checkout session (user navigated directly to /checkout)
+  useEffect(() => {
+    if (!authLoading && !clientSecret || !orderSummary) {
+      navigate("/order-summary");
+    }
+  }, [authLoading, clientSecret, orderSummary, navigate]);
+
+  // Fetch Braintree token on mount
+  useEffect(() => {
+    if (isAuthenticated()) {
+      fetch(
+        `${process.env.REACT_APP_API_URL || "http://localhost:4242"}/braintree/token`,
+      )
+        .then((res) => res.json())
+        .then((data) => setBraintreeToken(data.clientToken))
+        .catch((err) => {
+          console.error("Failed to load Braintree token:", err);
+          setError("Failed to load PayPal. Please refresh the page.");
+        });
+    }
+  }, []);
+
+  // Redirect to login if not authenticated - after all hooks
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -123,36 +161,6 @@ const CheckoutPage = () => {
   if (!isAuthenticated()) {
     return <Navigate to="/login" state={{ from: { pathname: "/checkout" } }} replace />;
   }
-
-  // Get checkout session data from OrderSummary page
-  const clientSecret = location.state?.clientSecret;
-  const orderSummary = location.state?.orderSummary;
-
-  // Braintree state
-  const [braintreeToken, setBraintreeToken] = useState(null);
-  const [braintreeInstance, setBraintreeInstance] = useState(null);
-  const [braintreeLoading, setBraintreeLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Redirect if no checkout session (user navigated directly to /checkout)
-  useEffect(() => {
-    if (!clientSecret || !orderSummary) {
-      navigate("/order-summary");
-    }
-  }, [clientSecret, orderSummary, navigate]);
-
-  // Fetch Braintree token on mount
-  useEffect(() => {
-    fetch(
-      `${process.env.REACT_APP_API_URL || "http://localhost:4242"}/braintree/token`,
-    )
-      .then((res) => res.json())
-      .then((data) => setBraintreeToken(data.clientToken))
-      .catch((err) => {
-        console.error("Failed to load Braintree token:", err);
-        setError("Failed to load PayPal. Please refresh the page.");
-      });
-  }, []);
 
   // Handle Braintree (PayPal) payment with cart data
   const handleBraintreePurchase = async () => {
