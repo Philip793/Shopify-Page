@@ -7,20 +7,33 @@ const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MINUTES = 5;
 const ATTEMPT_WINDOW_MINUTES = 5;
 
-// Pre-create admin user (in production, use proper admin creation flow)
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@example.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+// Security-critical configuration - no fallbacks allowed
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-// Initialize admin user in database
+// Validate required environment variables
+if (!JWT_SECRET) {
+  console.error("❌ FATAL: JWT_SECRET environment variable is required");
+  console.error("   Generate one with: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"");
+  process.exit(1);
+}
+
+// Initialize admin user in database (only if credentials provided)
 const initAdmin = async () => {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.warn("⚠️  ADMIN_EMAIL or ADMIN_PASSWORD not set - skipping admin initialization");
+    return;
+  }
+  
   try {
-    const existingAdmin = await User.findOne({ email: ADMIN_EMAIL });
-    if (!existingAdmin) {
+    const adminExists = await User.findOne({ email: ADMIN_EMAIL });
+    if (!adminExists) {
       await User.create({
+        name: "Admin",
         email: ADMIN_EMAIL,
         password: ADMIN_PASSWORD,
         role: "admin",
-        name: "Admin",
       });
       console.log("✅ Admin user initialized in database");
     }
@@ -29,10 +42,9 @@ const initAdmin = async () => {
   }
 };
 
-initAdmin();
+// Defer admin init until after DB connection
+setTimeout(initAdmin, 1000);
 
-const JWT_SECRET =
-  process.env.JWT_SECRET || "your-secret-key-change-in-production";
 const JWT_EXPIRES_IN = "7d";
 
 /**
