@@ -190,7 +190,8 @@ export const confirmPayment = async (req, res) => {
       payment: {
         provider: isStripe ? "stripe" : "test",
         transactionId: transactionId,
-        status: stripePaymentStatus || "completed",
+        // Map Stripe status to internal order status
+        status: stripePaymentStatus === "succeeded" ? "completed" : (stripePaymentStatus || "completed"),
         paidAt: new Date(),
       },
       status: "pending",
