@@ -30,6 +30,15 @@ initializeInventory().catch(err => {
   console.error("⚠️ Inventory initialization failed:", err.message);
 });
 
+// Trust proxy settings for accurate IP detection behind load balancers
+// In production: trust first proxy (e.g., nginx, AWS ELB)
+// In development: trust loopback only
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1); // Trust first proxy
+} else {
+  app.set("trust proxy", "loopback"); // Trust loopback only (localhost)
+}
+
 // Security Middleware
 
 // 1. Helmet - Security headers (XSS, clickjacking, etc.)
