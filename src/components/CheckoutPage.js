@@ -39,8 +39,12 @@ const StripeCheckoutForm = ({ orderSummary }) => {
     setMessage(null);
 
     try {
-      // Confirm payment with Stripe and redirect to success/cancel pages
-      const { error } = await stripe.confirmPayment({
+      // Save order summary to sessionStorage in case Stripe redirects
+      // (redirects lose navigation state, so we need a backup)
+      sessionStorage.setItem("pendingOrderSummary", JSON.stringify(orderSummary));
+      
+      // Confirm payment with Stripe
+      const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/checkout/success`,
@@ -54,14 +58,19 @@ const StripeCheckoutForm = ({ orderSummary }) => {
         if (error.type === "card_error" || error.type === "validation_error") {
           navigate("/checkout/cancel", { state: { error: error.message } });
         }
-      } else {
-        // Payment successful - redirect to success page
+      } else if (paymentIntent) {
+        // Payment successful - use the REAL PaymentIntent ID from Stripe
+        console.log("✅ Payment successful with ID:", paymentIntent.id);
         navigate("/checkout/success", {
           state: {
             orderSummary,
-            transactionId: "STRIPE-" + Date.now(),
+            transactionId: paymentIntent.id, // REAL Stripe PaymentIntent ID
           },
         });
+      } else {
+        // If no paymentIntent and no error, Stripe may have redirected
+        // The success page will handle URL-based extraction
+        console.log("⏳ Redirecting to success page...");
       }
     } catch (err) {
       setMessage("Payment failed. Please try again.");

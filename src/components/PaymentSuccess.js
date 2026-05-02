@@ -10,22 +10,55 @@ const PaymentSuccess = () => {
   const navigate = useNavigate();
   const { clearCart } = useCart();
   const [saveStatus, setSaveStatus] = useState("saving"); // saving, saved, error
+  const [errorMessage, setErrorMessage] = useState("");
   const hasSaved = useRef(false);
 
-  // Get order summary from navigation state or URL params
-  const orderSummary = location.state?.orderSummary;
-  const transactionId = location.state?.transactionId;
+  // Extract PaymentIntent ID from URL query params (Stripe redirect) or navigation state
+  const queryParams = new URLSearchParams(location.search);
+  const urlPaymentIntent = queryParams.get("payment_intent");
+  
+  // Get order summary from navigation state or sessionStorage (for redirect recovery)
+  const orderSummary = location.state?.orderSummary || (() => {
+    try {
+      const saved = sessionStorage.getItem("pendingOrderSummary");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+  
+  // Get transaction ID from URL (Stripe redirect) or navigation state
+  const transactionId = urlPaymentIntent || location.state?.transactionId;
 
   // Save order to backend and clear cart (only once)
   useEffect(() => {
     if (hasSaved.current) return;
-    hasSaved.current = true;
     
     const saveOrder = async () => {
-      if (!orderSummary || !transactionId) {
+      // Validate we have required data
+      if (!orderSummary) {
+        setErrorMessage("Order information not found. Please contact support.");
         setSaveStatus("error");
+        hasSaved.current = true;
         return;
       }
+      
+      if (!transactionId) {
+        setErrorMessage("Payment verification failed. No transaction ID found.");
+        setSaveStatus("error");
+        hasSaved.current = true;
+        return;
+      }
+      
+      // Validate transaction ID format (must be real Stripe pi_ ID)
+      if (!transactionId.startsWith("pi_")) {
+        setErrorMessage("Invalid payment verification. Transaction ID must be validated with Stripe.");
+        setSaveStatus("error");
+        hasSaved.current = true;
+        return;
+      }
+
+      hasSaved.current = true;
 
       try {
         const response = await fetch(`${API_URL}/confirm-payment`, {
@@ -39,15 +72,21 @@ const PaymentSuccess = () => {
           }),
         });
 
-        if (response.ok) {
-          console.log("✅ Order saved to database");
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          console.log("✅ Order saved to database:", data.orderId);
           setSaveStatus("saved");
+          // Clear sessionStorage after successful save
+          sessionStorage.removeItem("pendingOrderSummary");
         } else {
-          console.error("❌ Failed to save order");
+          console.error("❌ Failed to save order:", data.error);
+          setErrorMessage(data.error || "Failed to save order. Please contact support.");
           setSaveStatus("error");
         }
       } catch (error) {
         console.error("❌ Error saving order:", error);
+        setErrorMessage("Network error. Please contact support.");
         setSaveStatus("error");
       }
     };
@@ -82,13 +121,45 @@ const PaymentSuccess = () => {
               </svg>
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">
-              Payment Successful!
-            </h1>
-            <p className="text-gray-600 mb-8">
-              Thank you for your order. We've sent a confirmation email with
-              your order details.
-            </p>
+            {saveStatus === "error" ? (
+              <>
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg
+                    className="w-12 h-12 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </div>
+                <h1 className="text-3xl font-bold text-gray-800 mb-4">
+                  Order Processing Error
+                </h1>
+                <p className="text-red-600 mb-4">
+                  {errorMessage || "There was an issue processing your order."}
+                </p>
+                <p className="text-gray-600 mb-8">
+                  Your payment may have been processed, but we couldn't save your order. 
+                  Please contact support with your transaction ID: <strong>{transactionId || "N/A"}</strong>
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-3xl font-bold text-gray-800 mb-4">
+                  Payment Successful!
+                </h1>
+                <p className="text-gray-600 mb-8">
+                  Thank you for your order. We've sent a confirmation email with
+                  your order details.
+                </p>
+              </>
+            )}
 
             {/* Order Details */}
             {orderSummary && (

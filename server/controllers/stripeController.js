@@ -99,6 +99,9 @@ export const createCheckoutSession = async (req, res) => {
 
 /**
  * Confirm Stripe payment and save order to database
+ * 
+ * SECURITY: This endpoint strictly requires a valid Stripe PaymentIntent ID (pi_xxx).
+ * Non-Stripe IDs are rejected in production to prevent fake order creation.
  */
 export const confirmPayment = async (req, res) => {
   try {
@@ -106,27 +109,69 @@ export const confirmPayment = async (req, res) => {
     const { paymentIntentId, orderSummary, customer } = req.body;
 
     if (!paymentIntentId) {
-      return res.status(400).json({ error: "Payment intent ID is required" });
+      return res.status(400).json({ 
+        success: false,
+        error: "Payment intent ID is required" 
+      });
+    }
+
+    // STRICT VALIDATION: Must be a real Stripe PaymentIntent ID
+    const isStripe = paymentIntentId.startsWith("pi_");
+    const isDevelopment = process.env.NODE_ENV !== "production";
+
+    // In production, strictly reject non-Stripe IDs
+    if (!isStripe && !isDevelopment) {
+      console.error("🚫 Production: Rejected non-Stripe payment ID:", paymentIntentId);
+      return res.status(400).json({
+        success: false,
+        error: "Invalid payment verification. Stripe PaymentIntent ID required.",
+      });
     }
 
     let transactionId = paymentIntentId;
-    let isStripe = paymentIntentId.startsWith("pi_");
+    let stripePaymentStatus = null;
 
-    // Only validate with Stripe if it's a real Stripe payment intent ID
+    // MUST validate with Stripe for real payment IDs
     if (isStripe) {
       try {
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        stripePaymentStatus = paymentIntent.status;
+        
         if (paymentIntent.status !== "succeeded") {
+          console.error("❌ Stripe payment not successful:", paymentIntent.status);
           return res.status(400).json({
+            success: false,
             error: "Payment not successful",
             status: paymentIntent.status,
           });
         }
+        
+        // Verify amount matches (prevent tampering)
+        const expectedAmount = Math.round(parseFloat(orderSummary.total) * 100); // Convert to cents
+        if (paymentIntent.amount !== expectedAmount) {
+          console.error("🚫 Amount mismatch:", {
+            stripe: paymentIntent.amount,
+            expected: expectedAmount,
+          });
+          return res.status(400).json({
+            success: false,
+            error: "Payment amount verification failed",
+          });
+        }
+        
         transactionId = paymentIntent.id;
+        console.log("✅ Stripe payment validated:", transactionId);
       } catch (stripeErr) {
-        console.warn("⚠️ Stripe validation failed, saving order anyway:", stripeErr.message);
-        // Continue to save order even if Stripe validation fails
+        console.error("❌ Stripe validation failed:", stripeErr.message);
+        return res.status(400).json({
+          success: false,
+          error: "Payment verification failed with Stripe",
+          details: isDevelopment ? stripeErr.message : undefined,
+        });
       }
+    } else {
+      // Development mode only: Log warning for test payments
+      console.warn("⚠️  DEV MODE: Processing test payment without Stripe verification:", paymentIntentId);
     }
 
     // Prepare order data
@@ -145,7 +190,7 @@ export const confirmPayment = async (req, res) => {
       payment: {
         provider: isStripe ? "stripe" : "test",
         transactionId: transactionId,
-        status: "completed",
+        status: stripePaymentStatus || "completed",
         paidAt: new Date(),
       },
       status: "pending",
@@ -154,7 +199,15 @@ export const confirmPayment = async (req, res) => {
 
     // Save order to database
     const order = await createOrder(orderData);
-    console.log("✅ Order saved:", order?.orderId);
+    
+    if (!order) {
+      return res.status(500).json({
+        success: false,
+        error: "Failed to save order to database",
+      });
+    }
+    
+    console.log("✅ Order saved:", order.orderId);
 
     // Reduce inventory after successful payment
     const inventoryResult = reduceInventory(orderSummary.items);
@@ -166,12 +219,15 @@ export const confirmPayment = async (req, res) => {
 
     res.json({
       success: true,
-      orderId: order?.orderId,
+      orderId: order.orderId,
       order: order,
       inventoryUpdated: inventoryResult.success,
     });
   } catch (err) {
     console.error("Confirm payment error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ 
+      success: false,
+      error: err.message 
+    });
   }
 };
