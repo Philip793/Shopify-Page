@@ -129,17 +129,13 @@ test("order summary starts checkout", async () => {
       screen.getByRole("button", { name: /proceed to checkout/i }),
     ).toBeInTheDocument();
   });
-  fireEvent.click(
-    screen.getByRole("button", { name: /proceed to checkout/i }),
-  );
+  fireEvent.click(screen.getByRole("button", { name: /proceed to checkout/i }));
 
   // On order summary page, click the checkout button to trigger fetch
   await waitFor(() => {
     expect(screen.getByText(/order summary/i)).toBeInTheDocument();
   });
-  fireEvent.click(
-    screen.getByRole("button", { name: /proceed to checkout/i }),
-  );
+  fireEvent.click(screen.getByRole("button", { name: /proceed to checkout/i }));
 
   // Verify backend was called with cart items
   await waitFor(() => {
