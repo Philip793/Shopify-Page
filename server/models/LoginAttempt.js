@@ -28,7 +28,7 @@ const LoginAttemptSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Index for cleanup - auto-expire old records after 24 hours

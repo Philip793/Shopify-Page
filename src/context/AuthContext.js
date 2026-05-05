@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
-    
+
     if (token && savedUser) {
       try {
         setUser(JSON.parse(savedUser));
@@ -51,8 +51,8 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: data.user };
       } else {
         // Pass through lockout information from backend
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: data.error,
           locked: data.locked,
           remainingMinutes: data.remainingMinutes,
@@ -87,7 +87,10 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Registration error:", error);
-      return { success: false, error: "Registration failed. Please try again." };
+      return {
+        success: false,
+        error: "Registration failed. Please try again.",
+      };
     }
   };
 
@@ -115,11 +118,7 @@ export const AuthProvider = ({ children }) => {
     loading,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;

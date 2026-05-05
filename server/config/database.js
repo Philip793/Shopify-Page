@@ -7,7 +7,9 @@ const connectDB = async () => {
   try {
     // Require MONGODB_URI in production
     if (process.env.NODE_ENV === "production" && !process.env.MONGODB_URI) {
-      throw new Error("MONGODB_URI environment variable is required in production");
+      throw new Error(
+        "MONGODB_URI environment variable is required in production",
+      );
     }
 
     const mongoUri =
@@ -23,7 +25,9 @@ const connectDB = async () => {
     console.error("❌ MongoDB Connection Error:", error.message);
     // Exit process in production if DB connection fails
     if (process.env.NODE_ENV === "production") {
-      console.error("🚨 CRITICAL: Database connection failed in production. Exiting.");
+      console.error(
+        "🚨 CRITICAL: Database connection failed in production. Exiting.",
+      );
       process.exit(1);
     }
     return null;

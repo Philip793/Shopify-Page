@@ -16,24 +16,26 @@ const PaymentSuccess = () => {
   // Extract PaymentIntent ID from URL query params (Stripe redirect) or navigation state
   const queryParams = new URLSearchParams(location.search);
   const urlPaymentIntent = queryParams.get("payment_intent");
-  
+
   // Get order summary from navigation state or sessionStorage (for redirect recovery)
-  const orderSummary = location.state?.orderSummary || (() => {
-    try {
-      const saved = sessionStorage.getItem("pendingOrderSummary");
-      return saved ? JSON.parse(saved) : null;
-    } catch (e) {
-      return null;
-    }
-  })();
-  
+  const orderSummary =
+    location.state?.orderSummary ||
+    (() => {
+      try {
+        const saved = sessionStorage.getItem("pendingOrderSummary");
+        return saved ? JSON.parse(saved) : null;
+      } catch (e) {
+        return null;
+      }
+    })();
+
   // Get transaction ID from URL (Stripe redirect) or navigation state
   const transactionId = urlPaymentIntent || location.state?.transactionId;
 
   // Save order to backend and clear cart (only once)
   useEffect(() => {
     if (hasSaved.current) return;
-    
+
     const saveOrder = async () => {
       // Validate we have required data
       if (!orderSummary) {
@@ -42,17 +44,21 @@ const PaymentSuccess = () => {
         hasSaved.current = true;
         return;
       }
-      
+
       if (!transactionId) {
-        setErrorMessage("Payment verification failed. No transaction ID found.");
+        setErrorMessage(
+          "Payment verification failed. No transaction ID found.",
+        );
         setSaveStatus("error");
         hasSaved.current = true;
         return;
       }
-      
+
       // Validate transaction ID format (must be real Stripe pi_ ID)
       if (!transactionId.startsWith("pi_")) {
-        setErrorMessage("Invalid payment verification. Transaction ID must be validated with Stripe.");
+        setErrorMessage(
+          "Invalid payment verification. Transaction ID must be validated with Stripe.",
+        );
         setSaveStatus("error");
         hasSaved.current = true;
         return;
@@ -81,7 +87,9 @@ const PaymentSuccess = () => {
           sessionStorage.removeItem("pendingOrderSummary");
         } else {
           console.error("❌ Failed to save order:", data.error);
-          setErrorMessage(data.error || "Failed to save order. Please contact support.");
+          setErrorMessage(
+            data.error || "Failed to save order. Please contact support.",
+          );
           setSaveStatus("error");
         }
       } catch (error) {
@@ -145,8 +153,9 @@ const PaymentSuccess = () => {
                   {errorMessage || "There was an issue processing your order."}
                 </p>
                 <p className="text-gray-600 mb-8">
-                  Your payment may have been processed, but we couldn't save your order. 
-                  Please contact support with your transaction ID: <strong>{transactionId || "N/A"}</strong>
+                  Your payment may have been processed, but we couldn't save
+                  your order. Please contact support with your transaction ID:{" "}
+                  <strong>{transactionId || "N/A"}</strong>
                 </p>
               </>
             ) : (

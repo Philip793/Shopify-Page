@@ -26,15 +26,17 @@ validateProductCatalog(productCatalog);
 const app = express();
 
 // Connect to MongoDB
-connectDB().then(() => {
-  // Initialize admin user after DB connection is established
-  initAdmin();
-}).catch(err => {
-  console.error("⚠️ Database connection failed:", err.message);
-});
+connectDB()
+  .then(() => {
+    // Initialize admin user after DB connection is established
+    initAdmin();
+  })
+  .catch((err) => {
+    console.error("⚠️ Database connection failed:", err.message);
+  });
 
 // Initialize inventory from product catalog
-initializeInventory().catch(err => {
+initializeInventory().catch((err) => {
   console.error("⚠️ Inventory initialization failed:", err.message);
 });
 
@@ -46,8 +48,8 @@ if (process.env.NODE_ENV === "production") {
 
   // HTTPS enforcement in production - redirect HTTP to HTTPS
   app.use((req, res, next) => {
-    if (req.header('x-forwarded-proto') !== 'https') {
-      return res.redirect(`https://${req.header('host')}${req.url}`);
+    if (req.header("x-forwarded-proto") !== "https") {
+      return res.redirect(`https://${req.header("host")}${req.url}`);
     }
     next();
   });
@@ -58,17 +60,19 @@ if (process.env.NODE_ENV === "production") {
 // Security Middleware
 
 // 1. Helmet - Security headers (XSS, clickjacking, etc.)
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
     },
-  },
-  crossOriginEmbedderPolicy: false,
-}));
+    crossOriginEmbedderPolicy: false,
+  }),
+);
 
 // 2. Rate Limiting - Prevent brute force and abuse
 const limiter = rateLimit({
@@ -106,29 +110,34 @@ app.use((req, res, next) => {
 });
 
 // 4. HPP - Prevent HTTP Parameter Pollution
-app.use(hpp({
-  whitelist: [ // Allow these parameters to have multiple values
-    "price",
-    "category",
-    "sort",
-  ],
-}));
+app.use(
+  hpp({
+    whitelist: [
+      // Allow these parameters to have multiple values
+      "price",
+      "category",
+      "sort",
+    ],
+  }),
+);
 
 // 5. CORS - Configure for security
-app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 // Body parser with size limits
 app.use(bodyParser.json({ limit: "10kb" })); // Limit body size to prevent abuse
 
 // Request ID tracking for debugging and audit trails
 app.use((req, res, next) => {
-  req.id = req.headers['x-request-id'] || uuidv4();
-  res.setHeader('X-Request-ID', req.id);
+  req.id = req.headers["x-request-id"] || uuidv4();
+  res.setHeader("X-Request-ID", req.id);
   next();
 });
 
@@ -146,9 +155,9 @@ app.get("/health", (req, res) => {
 // Global error handler - prevent stack traces leaking in production
 app.use((err, req, res, next) => {
   console.error("Error:", err);
-  
+
   const isDev = process.env.NODE_ENV === "development";
-  
+
   res.status(err.status || 500).json({
     success: false,
     error: err.message || "Internal server error",
@@ -165,13 +174,25 @@ app.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`Security: ${isDev ? "HTTP (dev mode)" : "HTTPS required"}`);
   console.log(`\n✅ Available Payment Endpoints (All Production-Safe):`);
-  console.log(`   POST /create-checkout-session  - Stripe checkout (server-calculated amount)`);
-  console.log(`   POST /braintree/checkout-with-cart - Braintree checkout (server-calculated amount)`);
-  console.log(`   POST /confirm-payment - Validates Stripe payment before order creation`);
+  console.log(
+    `   POST /create-checkout-session  - Stripe checkout (server-calculated amount)`,
+  );
+  console.log(
+    `   POST /braintree/checkout-with-cart - Braintree checkout (server-calculated amount)`,
+  );
+  console.log(
+    `   POST /confirm-payment - Validates Stripe payment before order creation`,
+  );
   console.log(`   GET  /braintree/token - Braintree client token`);
-  console.log(`\n🗑️  Removed Legacy Endpoints (Security Risk - No Longer Available):`);
-  console.log(`   POST /create-payment-intent    - Accepted amount from frontend (REMOVED)`);
-  console.log(`   POST /braintree/checkout       - Accepted amount from frontend (REMOVED)`);
+  console.log(
+    `\n🗑️  Removed Legacy Endpoints (Security Risk - No Longer Available):`,
+  );
+  console.log(
+    `   POST /create-payment-intent    - Accepted amount from frontend (REMOVED)`,
+  );
+  console.log(
+    `   POST /braintree/checkout       - Accepted amount from frontend (REMOVED)`,
+  );
   console.log("");
 });
 

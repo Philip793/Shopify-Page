@@ -12,7 +12,7 @@ export const createOrder = async (orderData) => {
         .substr(2, 6)
         .toUpperCase()}`;
     }
-    
+
     const order = new Order(orderData);
     await order.save();
     console.log(`✅ Order saved: ${order.orderId}`);

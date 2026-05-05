@@ -8,7 +8,9 @@ import productCatalog from "../data/productCatalog.js";
 export const initializeInventory = async () => {
   try {
     const count = await Inventory.syncFromCatalog(productCatalog);
-    console.log(`📦 Inventory initialized: ${count} products synced to MongoDB`);
+    console.log(
+      `📦 Inventory initialized: ${count} products synced to MongoDB`,
+    );
     return count;
   } catch (error) {
     console.error("❌ Failed to initialize inventory:", error.message);
@@ -27,7 +29,7 @@ export const checkInventory = async (cartItems) => {
 
   for (const item of cartItems) {
     const inventory = await Inventory.findOne({ productId: item.id });
-    
+
     if (!inventory) {
       insufficientItems.push({
         productId: item.id,
@@ -67,7 +69,7 @@ export const reserveInventory = async (cartItems) => {
 
   for (const item of cartItems) {
     const result = await Inventory.checkAndReserve(item.id, item.quantity);
-    
+
     if (!result) {
       const inventory = await Inventory.findOne({ productId: item.id });
       errors.push({
@@ -84,7 +86,7 @@ export const reserveInventory = async (cartItems) => {
         reserved: item.quantity,
         remaining: result.availableStock,
       });
-      
+
       console.log(
         `📦 Reserved: ${result.name} - ${item.quantity} units (available: ${result.availableStock})`,
       );
@@ -95,12 +97,14 @@ export const reserveInventory = async (cartItems) => {
   if (errors.length > 0 && reservations.length > 0) {
     console.warn("⚠️ Rolling back partial reservations...");
     for (const reservation of reservations) {
-      const item = cartItems.find(i => i.id === reservation.productId);
+      const item = cartItems.find((i) => i.id === reservation.productId);
       if (item) {
         const inventory = await Inventory.findOne({ productId: item.id });
         if (inventory) {
           await inventory.release(item.quantity);
-          console.log(`🔄 Released reservation: ${inventory.name} +${item.quantity}`);
+          console.log(
+            `🔄 Released reservation: ${inventory.name} +${item.quantity}`,
+          );
         }
       }
     }
@@ -125,14 +129,14 @@ export const confirmInventory = async (cartItems) => {
 
   for (const item of cartItems) {
     const inventory = await Inventory.findOne({ productId: item.id });
-    
+
     if (!inventory) {
       errors.push(`Product ${item.id} not found in inventory`);
       continue;
     }
 
     const result = await inventory.confirm(item.quantity);
-    
+
     if (!result) {
       errors.push(
         `Failed to confirm inventory for ${inventory.name}: reserved=${inventory.reservedStock}, total=${inventory.totalStock}`,
@@ -144,7 +148,7 @@ export const confirmInventory = async (cartItems) => {
         sold: item.quantity,
         remaining: inventory.totalStock - item.quantity,
       });
-      
+
       console.log(
         `📦 Confirmed sale: ${inventory.name} - ${item.quantity} units (total remaining: ${inventory.totalStock - item.quantity})`,
       );
@@ -176,13 +180,13 @@ export const reduceInventory = async (cartItems) => {
         availableStock: { $gte: item.quantity },
       },
       {
-        $inc: { 
+        $inc: {
           totalStock: -item.quantity,
-          availableStock: -item.quantity 
+          availableStock: -item.quantity,
         },
         $set: { lastSync: new Date() },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!result) {
@@ -201,7 +205,7 @@ export const reduceInventory = async (cartItems) => {
         newInventory: result.totalStock,
         reducedBy: item.quantity,
       });
-      
+
       console.log(
         `📦 Inventory reduced: ${result.name} - ${item.quantity} units (total: ${result.totalStock})`,
       );
@@ -229,13 +233,13 @@ export const restoreInventory = async (cartItems) => {
     const result = await Inventory.findOneAndUpdate(
       { productId: item.id },
       {
-        $inc: { 
+        $inc: {
           totalStock: item.quantity,
-          availableStock: item.quantity 
+          availableStock: item.quantity,
         },
         $set: { lastSync: new Date() },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!result) {
@@ -247,7 +251,7 @@ export const restoreInventory = async (cartItems) => {
         newInventory: result.totalStock,
         restoredBy: item.quantity,
       });
-      
+
       console.log(
         `📦 Inventory restored: ${result.name} + ${item.quantity} units (total: ${result.totalStock})`,
       );
@@ -279,9 +283,11 @@ export const getInventory = async (productId) => {
 export const getLowStockProducts = async (threshold = 10) => {
   const lowStock = await Inventory.find({
     availableStock: { $lte: threshold },
-  }).sort({ availableStock: 1 }).lean();
+  })
+    .sort({ availableStock: 1 })
+    .lean();
 
-  return lowStock.map(item => ({
+  return lowStock.map((item) => ({
     id: item.productId,
     name: item.name,
     inventory: item.availableStock,
@@ -297,7 +303,7 @@ export const getLowStockProducts = async (threshold = 10) => {
  */
 export const getAllInventory = async () => {
   const inventory = await Inventory.find().lean();
-  return inventory.map(item => ({
+  return inventory.map((item) => ({
     id: item.productId,
     name: item.name,
     sku: item.sku,

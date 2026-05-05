@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [lockoutInfo, setLockoutInfo] = useState(null); // { locked, remainingMinutes, remainingAttempts }
-  
+
   // Form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +26,7 @@ const LoginPage = () => {
       setError("Email and password are required");
       return false;
     }
-    
+
     if (!isLogin) {
       if (!name) {
         setError("Name is required");
@@ -41,7 +41,7 @@ const LoginPage = () => {
         return false;
       }
     }
-    
+
     return true;
   };
 
@@ -49,11 +49,11 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
     setLockoutInfo(null);
-    
+
     if (!validateForm()) return;
-    
+
     setLoading(true);
-    
+
     try {
       let result;
       if (isLogin) {
@@ -61,14 +61,17 @@ const LoginPage = () => {
       } else {
         result = await register(email, password, name);
       }
-      
+
       if (result.success) {
         // Redirect to the page they were trying to access, or home
         navigate(from, { replace: true });
       } else {
         setError(result.error || "Authentication failed");
         // Handle lockout info from backend
-        if (result.locked !== undefined || result.remainingAttempts !== undefined) {
+        if (
+          result.locked !== undefined ||
+          result.remainingAttempts !== undefined
+        ) {
           setLockoutInfo({
             locked: result.locked,
             remainingMinutes: result.remainingMinutes,
@@ -108,20 +111,25 @@ const LoginPage = () => {
           </div>
 
           {error && (
-            <div className={`border px-4 py-3 rounded relative ${
-              lockoutInfo?.locked 
-                ? "bg-orange-50 border-orange-200 text-orange-700" 
-                : "bg-red-50 border-red-200 text-red-700"
-            }`}>
+            <div
+              className={`border px-4 py-3 rounded relative ${
+                lockoutInfo?.locked
+                  ? "bg-orange-50 border-orange-200 text-orange-700"
+                  : "bg-red-50 border-red-200 text-red-700"
+              }`}
+            >
               <p className="font-medium">{error}</p>
-              {lockoutInfo && !lockoutInfo.locked && lockoutInfo.remainingAttempts !== undefined && (
-                <p className="text-sm mt-1">
-                  Attempts remaining: {lockoutInfo.remainingAttempts}
-                </p>
-              )}
+              {lockoutInfo &&
+                !lockoutInfo.locked &&
+                lockoutInfo.remainingAttempts !== undefined && (
+                  <p className="text-sm mt-1">
+                    Attempts remaining: {lockoutInfo.remainingAttempts}
+                  </p>
+                )}
               {lockoutInfo?.locked && lockoutInfo.remainingMinutes && (
                 <p className="text-sm mt-1">
-                  Account will unlock in {lockoutInfo.remainingMinutes} minute(s)
+                  Account will unlock in {lockoutInfo.remainingMinutes}{" "}
+                  minute(s)
                 </p>
               )}
             </div>
@@ -131,7 +139,10 @@ const LoginPage = () => {
             <div className="rounded-md shadow-sm -space-y-px">
               {!isLogin && (
                 <div className="mb-4">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Full Name
                   </label>
                   <input
@@ -146,9 +157,12 @@ const LoginPage = () => {
                   />
                 </div>
               )}
-              
+
               <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Email address
                 </label>
                 <input
@@ -163,9 +177,12 @@ const LoginPage = () => {
                   placeholder="you@example.com"
                 />
               </div>
-              
+
               <div className="mb-4">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Password
                 </label>
                 <input
@@ -183,7 +200,10 @@ const LoginPage = () => {
 
               {!isLogin && (
                 <div className="mb-4">
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Confirm Password
                   </label>
                   <input
@@ -220,8 +240,8 @@ const LoginPage = () => {
               onClick={switchMode}
               className="text-blue-600 hover:text-blue-500 font-medium"
             >
-              {isLogin 
-                ? "Don't have an account? Register" 
+              {isLogin
+                ? "Don't have an account? Register"
                 : "Already have an account? Sign in"}
             </button>
           </div>

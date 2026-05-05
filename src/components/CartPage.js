@@ -125,9 +125,7 @@ const CartPage = () => {
           <div className="bg-gray-50 p-4 sm:p-6 border-t border-gray-200">
             <div className="flex justify-between items-center mb-4">
               <span className="text-gray-600">Subtotal</span>
-              <span className="text-lg text-gray-800">
-                ${total.toFixed(2)}
-              </span>
+              <span className="text-lg text-gray-800">${total.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center mb-6">
               <span className="text-gray-600">Shipping</span>

@@ -20,12 +20,13 @@ const UserSchema = new mongoose.Schema(
       required: true,
       minlength: 8,
       validate: {
-        validator: function(v) {
+        validator: function (v) {
           // Must contain at least one uppercase, one lowercase, and one number
           return /[A-Z]/.test(v) && /[a-z]/.test(v) && /\d/.test(v);
         },
-        message: "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      }
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      },
     },
     role: {
       type: String,
@@ -35,13 +36,13 @@ const UserSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Hash password before saving
 UserSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
-  
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });

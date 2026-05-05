@@ -53,7 +53,7 @@ const Navbar = () => {
           {/* Auth Links */}
           {isAuthenticated() ? (
             <div className="flex items-center space-x-3">
-              <span className="text-sm">Hi, {user?.name?.split(' ')[0]}</span>
+              <span className="text-sm">Hi, {user?.name?.split(" ")[0]}</span>
               <button
                 onClick={handleLogout}
                 className="text-sm bg-burgundy-700 hover:bg-burgundy-600 px-3 py-1 rounded"
@@ -62,7 +62,10 @@ const Navbar = () => {
               </button>
             </div>
           ) : (
-            <Link to="/login" className="hover:underline flex items-center space-x-1">
+            <Link
+              to="/login"
+              className="hover:underline flex items-center space-x-1"
+            >
               <UserCircleIcon className="h-5 w-5" />
               <span>Login</span>
             </Link>
@@ -129,9 +132,7 @@ const Navbar = () => {
             <div className="border-t border-burgundy-700 pt-3 mt-3">
               {isAuthenticated() ? (
                 <>
-                  <span className="block text-sm py-2">
-                    Hi, {user?.name}
-                  </span>
+                  <span className="block text-sm py-2">Hi, {user?.name}</span>
                   <button
                     onClick={handleLogout}
                     className="text-left hover:text-gray-300 py-2 w-full"

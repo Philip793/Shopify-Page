@@ -19,7 +19,9 @@ import SEO from "./SEO.js";
 const stripeKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
 
 if (!stripeKey) {
-  throw new Error("Missing REACT_APP_STRIPE_PUBLISHABLE_KEY environment variable. Please set it in your .env file.");
+  throw new Error(
+    "Missing REACT_APP_STRIPE_PUBLISHABLE_KEY environment variable. Please set it in your .env file.",
+  );
 }
 
 const stripePromise = loadStripe(stripeKey);
@@ -45,8 +47,11 @@ const StripeCheckoutForm = ({ orderSummary }) => {
     try {
       // Save order summary to sessionStorage in case Stripe redirects
       // (redirects lose navigation state, so we need a backup)
-      sessionStorage.setItem("pendingOrderSummary", JSON.stringify(orderSummary));
-      
+      sessionStorage.setItem(
+        "pendingOrderSummary",
+        JSON.stringify(orderSummary),
+      );
+
       // Confirm payment with Stripe
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
@@ -129,7 +134,7 @@ const CheckoutPage = () => {
 
   // Redirect if no checkout session (user navigated directly to /checkout)
   useEffect(() => {
-    if (!authLoading && !clientSecret || !orderSummary) {
+    if ((!authLoading && !clientSecret) || !orderSummary) {
       navigate("/order-summary");
     }
   }, [authLoading, clientSecret, orderSummary, navigate]);
@@ -159,7 +164,13 @@ const CheckoutPage = () => {
   }
 
   if (!isAuthenticated()) {
-    return <Navigate to="/login" state={{ from: { pathname: "/checkout" } }} replace />;
+    return (
+      <Navigate
+        to="/login"
+        state={{ from: { pathname: "/checkout" } }}
+        replace
+      />
+    );
   }
 
   // Handle Braintree (PayPal) payment with cart data

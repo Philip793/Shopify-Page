@@ -18,20 +18,24 @@ const ContactPage = () => {
     switch (name) {
       case "name":
         if (!value.trim()) return "Name is required";
-        if (value.trim().length < 2) return "Name must be at least 2 characters";
+        if (value.trim().length < 2)
+          return "Name must be at least 2 characters";
         return "";
       case "email":
         if (!value.trim()) return "Email is required";
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) return "Please enter a valid email address";
+        if (!emailRegex.test(value))
+          return "Please enter a valid email address";
         return "";
       case "subject":
         if (!value.trim()) return "Subject is required";
-        if (value.trim().length < 3) return "Subject must be at least 3 characters";
+        if (value.trim().length < 3)
+          return "Subject must be at least 3 characters";
         return "";
       case "message":
         if (!value.trim()) return "Message is required";
-        if (value.trim().length < 10) return "Message must be at least 10 characters";
+        if (value.trim().length < 10)
+          return "Message must be at least 10 characters";
         return "";
       default:
         return "";
@@ -77,7 +81,7 @@ const ContactPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Mark all fields as touched
     const allTouched = Object.keys(formData).reduce((acc, key) => {
       acc[key] = true;
@@ -95,10 +99,10 @@ const ContactPage = () => {
     }
 
     setIsSubmitting(true);
-    
+
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    
+
     setIsSubmitting(false);
     setShowSuccess(true);
     setFormData({
@@ -142,9 +146,7 @@ const ContactPage = () => {
       />
       <main className="min-h-screen bg-gold-50 py-16">
         <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-burgundy-600">
-            Contact Us
-          </h1>
+          <h1 className="text-4xl font-bold text-burgundy-600">Contact Us</h1>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -178,7 +180,11 @@ const ContactPage = () => {
                   }`}
                 />
                 {errors.name && touched.name && (
-                  <p id="name-error" className="mt-1 text-sm text-red-600" role="alert">
+                  <p
+                    id="name-error"
+                    className="mt-1 text-sm text-red-600"
+                    role="alert"
+                  >
                     {errors.name}
                   </p>
                 )}
@@ -208,7 +214,11 @@ const ContactPage = () => {
                   }`}
                 />
                 {errors.email && touched.email && (
-                  <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">
+                  <p
+                    id="email-error"
+                    className="mt-1 text-sm text-red-600"
+                    role="alert"
+                  >
                     {errors.email}
                   </p>
                 )}
@@ -230,7 +240,9 @@ const ContactPage = () => {
                   onBlur={handleBlur}
                   disabled={isSubmitting}
                   aria-invalid={errors.subject ? "true" : "false"}
-                  aria-describedby={errors.subject ? "subject-error" : undefined}
+                  aria-describedby={
+                    errors.subject ? "subject-error" : undefined
+                  }
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-burgundy-500 transition-colors ${
                     errors.subject && touched.subject
                       ? "border-red-500 bg-red-50"
@@ -238,7 +250,11 @@ const ContactPage = () => {
                   }`}
                 />
                 {errors.subject && touched.subject && (
-                  <p id="subject-error" className="mt-1 text-sm text-red-600" role="alert">
+                  <p
+                    id="subject-error"
+                    className="mt-1 text-sm text-red-600"
+                    role="alert"
+                  >
                     {errors.subject}
                   </p>
                 )}
@@ -260,7 +276,9 @@ const ContactPage = () => {
                   disabled={isSubmitting}
                   rows="4"
                   aria-invalid={errors.message ? "true" : "false"}
-                  aria-describedby={errors.message ? "message-error" : undefined}
+                  aria-describedby={
+                    errors.message ? "message-error" : undefined
+                  }
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-burgundy-500 transition-colors ${
                     errors.message && touched.message
                       ? "border-red-500 bg-red-50"
@@ -268,7 +286,11 @@ const ContactPage = () => {
                   }`}
                 />
                 {errors.message && touched.message && (
-                  <p id="message-error" className="mt-1 text-sm text-red-600" role="alert">
+                  <p
+                    id="message-error"
+                    className="mt-1 text-sm text-red-600"
+                    role="alert"
+                  >
                     {errors.message}
                   </p>
                 )}
@@ -355,7 +377,7 @@ const ContactPage = () => {
 
         {/* Success Message Popup */}
         {showSuccess && (
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             role="dialog"
             aria-modal="true"
@@ -364,10 +386,15 @@ const ContactPage = () => {
             <div className="bg-white rounded-lg p-8 max-w-md mx-4 shadow-2xl">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-2xl" aria-hidden="true">✓</span>
+                  <span className="text-2xl" aria-hidden="true">
+                    ✓
+                  </span>
                 </div>
                 <div>
-                  <h3 id="success-title" className="text-xl font-bold text-gray-900">
+                  <h3
+                    id="success-title"
+                    className="text-xl font-bold text-gray-900"
+                  >
                     Message Sent!
                   </h3>
                   <p className="text-gray-600">
@@ -378,7 +405,9 @@ const ContactPage = () => {
               <div className="flex justify-end">
                 <button
                   onClick={() => setShowSuccess(false)}
-                  onKeyDown={(e) => handleKeyDown(e, () => setShowSuccess(false))}
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, () => setShowSuccess(false))
+                  }
                   className="px-4 py-2 bg-burgundy-600 text-white rounded-md hover:bg-burgundy-700 transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-burgundy-500 focus:ring-offset-2"
                   autoFocus
                 >

@@ -8,12 +8,14 @@ const requiredVars = [
   "BRAINTREE_ENVIRONMENT",
   "BRAINTREE_MERCHANT_ID",
   "BRAINTREE_PUBLIC_KEY",
-  "BRAINTREE_PRIVATE_KEY"
+  "BRAINTREE_PRIVATE_KEY",
 ];
 
-const missingVars = requiredVars.filter(varName => !process.env[varName]);
+const missingVars = requiredVars.filter((varName) => !process.env[varName]);
 if (missingVars.length > 0) {
-  throw new Error(`Missing required Braintree environment variables: ${missingVars.join(", ")}`);
+  throw new Error(
+    `Missing required Braintree environment variables: ${missingVars.join(", ")}`,
+  );
 }
 
 const gateway = new braintree.BraintreeGateway({

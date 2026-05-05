@@ -1,48 +1,51 @@
 # Merchant Checkout Platform
+
 **React + Node.js | Stripe + Braintree Integration**
 
-Solo-developed full-stack checkout system designed to replace third-party marketplace dependence. Architected a modular React frontend and secure Node.js backend integrating Stripe and Braintree for multi-provider payment processing and scalable transaction handling.
----
+## Solo-developed full-stack checkout system designed to replace third-party marketplace dependence. Architected a modular React frontend and secure Node.js backend integrating Stripe and Braintree for multi-provider payment processing and scalable transaction handling.
 
 ## Overview
+
 This project is a custom e-commerce solution for an early-stage merchant transitioning from Etsy to an independent storefront. The goal was to provide greater control over branding, customer experience, and payment processing while designing the system to support future growth.
 
 I developed the full-stack platform independently, designing modular React components and implementing secure Node.js backend endpoints to process multi-method payments.
 
 The system was designed with clear separation between UI, state management, and payment orchestration layers, enabling maintainability, extensibility, and future integration of additional payment providers or services.
 
-This project demonstrates production-style payment architecture, secure credential handling, and scalable component design beyond tutorial-level implementations.
----
-
+## This project demonstrates production-style payment architecture, secure credential handling, and scalable component design beyond tutorial-level implementations.
 
 ## Project Goals
-- Enable merchant independence from third-party marketplaces  
-- Support multiple payment providers within a unified checkout flow  
-- Maintain secure transaction handling  
-- Deliver a responsive, user-friendly experience  
+
+- Enable merchant independence from third-party marketplaces
+- Support multiple payment providers within a unified checkout flow
+- Maintain secure transaction handling
+- Deliver a responsive, user-friendly experience
 - Design for scalability and modularity
 
 ---
 
 ## Key Features
+
 - Architected **reusable, component-driven React** checkout flow using **hooks** and context for centralized **state management**
 - Integrated **Stripe Payment Element** and **Braintree Drop-In** to support **card, wallet, and PayPal** payments within a unified UI
 - Designed backend **REST endpoints** to securely generate PaymentIntents and client tokens
 - Implemented **structured error handling** and loading states to ensure resilient UX during asynchronous payment flows
 - Structured codebase for extensibility, enabling additional payment providers or order services with minimal refactoring
----
 
+---
 
 ## Tech Stack
 
-**Frontend:**  
-- **React (Hooks, Context API)**  
-- **Tailwind CSS**  
-- component-driven architecture for maintainability 
+**Frontend:**
 
-**Backend:**  
-- **Node.js, Express**  
-- Stripe SDK  
+- **React (Hooks, Context API)**
+- **Tailwind CSS**
+- component-driven architecture for maintainability
+
+**Backend:**
+
+- **Node.js, Express**
+- Stripe SDK
 - Braintree SDK
 - Environment-based secure credentials
 
@@ -51,31 +54,35 @@ This project demonstrates production-style payment architecture, secure credenti
 ## Architecture Overview
 
 ### Frontend
-- Component-based structure for checkout flow  
-- Context API for global cart state management  
-- Separation of UI components and payment logic  
-- Conditional rendering for multiple payment providers  
-- Client-side validation, error handling, and loading states  
+
+- Component-based structure for checkout flow
+- Context API for global cart state management
+- Separation of UI components and payment logic
+- Conditional rendering for multiple payment providers
+- Client-side validation, error handling, and loading states
 
 ### Backend
+
 - REST API endpoints for:
-  - Creating Stripe PaymentIntent  
-  - Generating Braintree client tokens  
-  - Processing Braintree transactions  
-- Secure handling of payment credentials via environment variables  
+  - Creating Stripe PaymentIntent
+  - Generating Braintree client tokens
+  - Processing Braintree transactions
+- Secure handling of payment credentials via environment variables
 - Server-side transaction confirmation
 
 ---
 
 ### Payment Flow
-1. User selects a payment method  
-2. Frontend requests a secure client token or payment intent from the backend  
-3. Backend communicates with Stripe or Braintree  
-4. Payment confirmation or error is returned to the UI  
+
+1. User selects a payment method
+2. Frontend requests a secure client token or payment intent from the backend
+3. Backend communicates with Stripe or Braintree
+4. Payment confirmation or error is returned to the UI
 
 ---
 
 ## Project Structure
+
 ```bash
 /public
   /images
@@ -154,12 +161,14 @@ This project demonstrates production-style payment architecture, secure credenti
 ## Installation & Setup
 
 ### Prerequisites
+
 - **Node.js** 18+ and npm
 - **MongoDB** (local or MongoDB Atlas)
 - **Stripe account** (for payments)
 - **Braintree account** (optional, for PayPal)
 
 ### 1. Clone and Install
+
 ```bash
 git clone https://github.com/Philip793/Shopify-Page.git
 cd Shopify-Page
@@ -217,6 +226,7 @@ NODE_ENV=development
 ### 3. Start MongoDB
 
 **Local MongoDB:**
+
 ```bash
 mongod
 ```
@@ -226,12 +236,14 @@ mongod
 ### 4. Run the Application
 
 **Backend** (Terminal 1):
+
 ```bash
 npm run server
 # Server starts on http://localhost:4242
 ```
 
 **Frontend** (Terminal 2):
+
 ```bash
 npm start
 # React app starts on http://localhost:3000
@@ -239,11 +251,11 @@ npm start
 
 ### 5. Verify Setup
 
-| Check | URL | Expected |
-|-------|-----|----------|
+| Check      | URL                          | Expected               |
+| ---------- | ---------------------------- | ---------------------- |
 | API Health | http://localhost:4242/health | `{"status":"healthy"}` |
-| Frontend | http://localhost:3000 | Shop page loads |
-| Login | http://localhost:3000/login | Login form appears |
+| Frontend   | http://localhost:3000        | Shop page loads        |
+| Login      | http://localhost:3000/login  | Login form appears     |
 
 ### First-Time Setup
 
@@ -254,17 +266,18 @@ npm start
 
 ### Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| `Missing JWT_SECRET` | Generate with: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
-| `Missing REACT_APP_STRIPE_PUBLISHABLE_KEY` | Add to `.env`, restart frontend |
-| MongoDB connection failed | Verify `mongod` is running or check Atlas connection string |
-| Port 4242 in use | Kill process: `npx kill-port 4242` |
-| Stripe payment fails | Verify Stripe keys are test keys (start with `pk_test_` / `sk_test_`)
+| Issue                                      | Solution                                                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `Missing JWT_SECRET`                       | Generate with: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
+| `Missing REACT_APP_STRIPE_PUBLISHABLE_KEY` | Add to `.env`, restart frontend                                                           |
+| MongoDB connection failed                  | Verify `mongod` is running or check Atlas connection string                               |
+| Port 4242 in use                           | Kill process: `npx kill-port 4242`                                                        |
+| Stripe payment fails                       | Verify Stripe keys are test keys (start with `pk_test_` / `sk_test_`)                     |
 
 ---
 
 ## Security & Scalability
+
 - Payment secrets are never exposed to the frontend
 - Tokenized payment flows using official Stripe and Braintree SDKs
 - Server-side handling of sensitive transaction logic
@@ -273,11 +286,13 @@ npm start
 ---
 
 ## Deployment (In Progress)
+
 - Environment variable configuration in production
 - Secure HTTPS payment handling
 - Scalable backend hosting
 
 ## Future Enhancements
+
 - Order persistence with database integration
 - Merchant dashboard for transaction monitoring
 - Payment status logging & analytics

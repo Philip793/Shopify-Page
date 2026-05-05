@@ -16,7 +16,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 if (!JWT_SECRET) {
   throw new Error(
     "Missing JWT_SECRET environment variable. " +
-    "Generate one with: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\""
+      "Generate one with: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"",
   );
 }
 
@@ -25,7 +25,9 @@ if (!JWT_SECRET) {
 // Export this function to be called after DB connection is established
 export const initAdmin = async () => {
   if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-    console.log("ℹ️  Admin credentials not set (ADMIN_EMAIL, ADMIN_PASSWORD) - skipping auto-initialization");
+    console.log(
+      "ℹ️  Admin credentials not set (ADMIN_EMAIL, ADMIN_PASSWORD) - skipping auto-initialization",
+    );
     console.log("   To create an admin, set both variables in your .env file");
     return;
   }
@@ -143,43 +145,48 @@ const getClientIP = (req) => {
  */
 const isAccountLocked = async (email, ipAddress) => {
   const record = await LoginAttempt.findOne({ email });
-  
+
   if (!record) return { locked: false };
-  
+
   // Check if currently locked
   if (record.lockoutUntil && record.lockoutUntil > new Date()) {
     const remainingMinutes = Math.ceil(
-      (record.lockoutUntil - new Date()) / (1000 * 60)
+      (record.lockoutUntil - new Date()) / (1000 * 60),
     );
-    return { 
-      locked: true, 
+    return {
+      locked: true,
       remainingMinutes,
-      message: `Account locked. Try again in ${remainingMinutes} minute(s).`
+      message: `Account locked. Try again in ${remainingMinutes} minute(s).`,
     };
   }
-  
+
   // Check if within attempt window and max attempts reached
   const windowStart = new Date(Date.now() - ATTEMPT_WINDOW_MINUTES * 60 * 1000);
-  
-  if (record.lastAttempt > windowStart && record.attempts >= MAX_FAILED_ATTEMPTS) {
+
+  if (
+    record.lastAttempt > windowStart &&
+    record.attempts >= MAX_FAILED_ATTEMPTS
+  ) {
     // Lock the account
-    record.lockoutUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000);
+    record.lockoutUntil = new Date(
+      Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000,
+    );
     await record.save();
-    
-    return { 
-      locked: true, 
+
+    return {
+      locked: true,
       remainingMinutes: LOCKOUT_DURATION_MINUTES,
-      message: `Account locked due to ${MAX_FAILED_ATTEMPTS} failed attempts. Try again in ${LOCKOUT_DURATION_MINUTES} minutes.`
+      message: `Account locked due to ${MAX_FAILED_ATTEMPTS} failed attempts. Try again in ${LOCKOUT_DURATION_MINUTES} minutes.`,
     };
   }
-  
+
   // Reset if outside window
   if (record.lastAttempt <= windowStart) {
     record.attempts = 0;
     record.lockoutUntil = null;
     await record.save();
   }
-  
+
   return { locked: false };
 };
 
@@ -191,31 +198,35 @@ const recordFailedAttempt = async (email, ipAddress) => {
     { email },
     {
       $inc: { attempts: 1 },
-      $set: { 
+      $set: {
         lastAttempt: new Date(),
-        ipAddress 
+        ipAddress,
       },
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
-  
+
   // Check if we just hit the limit
   if (record.attempts >= MAX_FAILED_ATTEMPTS) {
-    record.lockoutUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000);
+    record.lockoutUntil = new Date(
+      Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000,
+    );
     await record.save();
-    
-    console.warn(`🔒 Account locked: ${email} after ${MAX_FAILED_ATTEMPTS} failed attempts`);
-    return { 
-      locked: true, 
+
+    console.warn(
+      `🔒 Account locked: ${email} after ${MAX_FAILED_ATTEMPTS} failed attempts`,
+    );
+    return {
+      locked: true,
       remainingAttempts: 0,
-      message: `Account locked due to ${MAX_FAILED_ATTEMPTS} failed attempts. Try again in ${LOCKOUT_DURATION_MINUTES} minutes.`
+      message: `Account locked due to ${MAX_FAILED_ATTEMPTS} failed attempts. Try again in ${LOCKOUT_DURATION_MINUTES} minutes.`,
     };
   }
-  
-  return { 
-    locked: false, 
+
+  return {
+    locked: false,
     remainingAttempts: MAX_FAILED_ATTEMPTS - record.attempts,
-    message: `Invalid credentials. ${MAX_FAILED_ATTEMPTS - record.attempts} attempt(s) remaining before lockout.`
+    message: `Invalid credentials. ${MAX_FAILED_ATTEMPTS - record.attempts} attempt(s) remaining before lockout.`,
   };
 };
 
@@ -258,13 +269,17 @@ export const login = async (req, res) => {
     if (!user) {
       // Record failed attempt even if user doesn't exist (prevent username enumeration)
       const attemptStatus = await recordFailedAttempt(email, ipAddress);
-      
+
       return res.status(401).json({
         success: false,
-        error: attemptStatus.locked ? attemptStatus.message : "Invalid credentials",
+        error: attemptStatus.locked
+          ? attemptStatus.message
+          : "Invalid credentials",
         remainingAttempts: attemptStatus.remainingAttempts,
         locked: attemptStatus.locked,
-        ...(attemptStatus.locked && { remainingMinutes: LOCKOUT_DURATION_MINUTES }),
+        ...(attemptStatus.locked && {
+          remainingMinutes: LOCKOUT_DURATION_MINUTES,
+        }),
       });
     }
 
@@ -272,15 +287,19 @@ export const login = async (req, res) => {
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
       const attemptStatus = await recordFailedAttempt(email, ipAddress);
-      
-      console.warn(`⚠️  Failed login attempt ${attemptStatus.attempts || 'locked'} for: ${email} from IP: ${ipAddress}`);
-      
+
+      console.warn(
+        `⚠️  Failed login attempt ${attemptStatus.attempts || "locked"} for: ${email} from IP: ${ipAddress}`,
+      );
+
       return res.status(401).json({
         success: false,
         error: attemptStatus.message,
         remainingAttempts: attemptStatus.remainingAttempts,
         locked: attemptStatus.locked,
-        ...(attemptStatus.locked && { remainingMinutes: LOCKOUT_DURATION_MINUTES }),
+        ...(attemptStatus.locked && {
+          remainingMinutes: LOCKOUT_DURATION_MINUTES,
+        }),
       });
     }
 
@@ -290,7 +309,9 @@ export const login = async (req, res) => {
     // Generate token
     const token = generateToken(user);
 
-    console.log(`✅ User logged in: ${email} (${user.role}) from IP: ${ipAddress}`);
+    console.log(
+      `✅ User logged in: ${email} (${user.role}) from IP: ${ipAddress}`,
+    );
 
     res.json({
       success: true,
@@ -316,7 +337,9 @@ export const login = async (req, res) => {
  */
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.user.email }).select("-password");
+    const user = await User.findOne({ email: req.user.email }).select(
+      "-password",
+    );
     if (!user) {
       return res.status(404).json({
         success: false,

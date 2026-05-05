@@ -28,34 +28,34 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <Router>
-          <Navbar />
-          <div className="mt-4">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/shop" element={<ShopPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/order-summary" element={<OrderSummary />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/checkout/success" element={<PaymentSuccess />} />
-              <Route path="/checkout/cancel" element={<PaymentCancel />} />
-              <Route path="/our-story" element={<OurStoryPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/shipping" element={<ShippingInfoPage />} />
-              <Route path="/returns" element={<ReturnsPage />} />
-              <Route path="/faq" element={<FAQPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/featured" element={<FeaturedPage />} />
-              <Route path="/blog" element={<BlogPage />} />
-              <Route path="/blog/:postId" element={<BlogPostPage />} />
-              <Route
-                path="/product/:productId"
-                element={<ProductPageFinal />}
-              />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </div>
-        </Router>
-      </CartProvider>
+            <Navbar />
+            <div className="mt-4">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/shop" element={<ShopPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/order-summary" element={<OrderSummary />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/checkout/success" element={<PaymentSuccess />} />
+                <Route path="/checkout/cancel" element={<PaymentCancel />} />
+                <Route path="/our-story" element={<OurStoryPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/shipping" element={<ShippingInfoPage />} />
+                <Route path="/returns" element={<ReturnsPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/featured" element={<FeaturedPage />} />
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:postId" element={<BlogPostPage />} />
+                <Route
+                  path="/product/:productId"
+                  element={<ProductPageFinal />}
+                />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </div>
+          </Router>
+        </CartProvider>
       </AuthProvider>
     </HelmetProvider>
   );
