@@ -24,30 +24,10 @@ export const getClientToken = async (req, res) => {
 };
 
 /**
- * Legacy checkout endpoint (deprecated - accepts amount from frontend)
+ * Legacy checkout endpoint (REMOVED - security risk)
+ * This endpoint accepted amount from frontend, enabling price tampering.
+ * Use /braintree/checkout-with-cart instead, which calculates totals server-side.
  */
-export const checkout = async (req, res) => {
-  try {
-    const { nonce, amount } = req.body;
-
-    const result = await gateway.transaction.sale({
-      amount: amount,
-      paymentMethodNonce: nonce,
-      options: {
-        submitForSettlement: true,
-      },
-    });
-
-    if (result.success) {
-      res.send({ success: true, transactionId: result.transaction.id });
-    } else {
-      res.status(400).send({ success: false, error: result.message });
-    }
-  } catch (err) {
-    console.error("Braintree checkout error:", err);
-    res.status(500).send({ error: err.message });
-  }
-};
 
 /**
  * Secure checkout endpoint - calculates total from trusted product data

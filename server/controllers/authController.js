@@ -22,13 +22,14 @@ if (!JWT_SECRET) {
 
 // Admin initialization - requires explicit credentials (no fallbacks)
 // Set ADMIN_EMAIL and ADMIN_PASSWORD in .env to auto-create admin on startup
-const initAdmin = async () => {
+// Export this function to be called after DB connection is established
+export const initAdmin = async () => {
   if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
     console.log("ℹ️  Admin credentials not set (ADMIN_EMAIL, ADMIN_PASSWORD) - skipping auto-initialization");
     console.log("   To create an admin, set both variables in your .env file");
     return;
   }
-  
+
   try {
     const adminExists = await User.findOne({ email: ADMIN_EMAIL });
     if (!adminExists) {
@@ -44,9 +45,6 @@ const initAdmin = async () => {
     console.error("❌ Failed to initialize admin:", error.message);
   }
 };
-
-// Defer admin init until after DB connection
-setTimeout(initAdmin, 1000);
 
 const JWT_EXPIRES_IN = "7d";
 

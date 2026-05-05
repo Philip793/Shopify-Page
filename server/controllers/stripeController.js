@@ -7,37 +7,10 @@ import {
 } from "../services/inventoryService.js";
 
 /**
- * Create a legacy PaymentIntent (deprecated - accepts amount from frontend)
+ * Legacy PaymentIntent endpoint (REMOVED - security risk)
+ * This endpoint accepted amount from frontend, enabling price tampering.
+ * Use /create-checkout-session instead, which calculates totals server-side.
  */
-export const createPaymentIntent = async (req, res) => {
-  try {
-    console.log("Request received at /create-payment-intent (legacy)");
-    console.log("Request body:", req.body);
-    console.log("Stripe key exists?", !!process.env.STRIPE_SECRET_KEY);
-
-    const { amount } = req.body;
-
-    // Basic input validation
-    if (!amount || typeof amount !== "number" || amount <= 0) {
-      return res.status(400).send({ error: "Invalid amount" });
-    }
-
-    // Create a PaymentIntent with automatic payment methods
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: "aud",
-      automatic_payment_methods: { enabled: true },
-    });
-
-    console.log("PaymentIntent created:", paymentIntent.id);
-
-    // Send client secret to frontend
-    res.send({ clientSecret: paymentIntent.client_secret });
-  } catch (err) {
-    console.error("Stripe error:", err);
-    res.status(500).send({ error: err.message });
-  }
-};
 
 /**
  * Create a secure checkout session - calculates total from trusted product data

@@ -7,11 +7,14 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
+import { v4 as uuidv4 } from "uuid";
 import paymentRoutes from "./routes/payments.js";
 import connectDB from "./config/database.js";
 import productCatalog from "./data/productCatalog.js";
 import { validateProductCatalog } from "./middleware/productValidation.js";
 import { initializeInventory } from "./services/inventoryService.js";
+import { initAdmin } from "./controllers/authController.js";
+import sanitizeInput from "./middleware/validateInput.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -23,7 +26,12 @@ validateProductCatalog(productCatalog);
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(() => {
+  // Initialize admin user after DB connection is established
+  initAdmin();
+}).catch(err => {
+  console.error("⚠️ Database connection failed:", err.message);
+});
 
 // Initialize inventory from product catalog
 initializeInventory().catch(err => {
@@ -35,6 +43,14 @@ initializeInventory().catch(err => {
 // In development: trust loopback only
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1); // Trust first proxy
+
+  // HTTPS enforcement in production - redirect HTTP to HTTPS
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      return res.redirect(`https://${req.header('host')}${req.url}`);
+    }
+    next();
+  });
 } else {
   app.set("trust proxy", "loopback"); // Trust loopback only (localhost)
 }
@@ -109,8 +125,14 @@ app.use(cors({
 // Body parser with size limits
 app.use(bodyParser.json({ limit: "10kb" })); // Limit body size to prevent abuse
 
+// Request ID tracking for debugging and audit trails
+app.use((req, res, next) => {
+  req.id = req.headers['x-request-id'] || uuidv4();
+  res.setHeader('X-Request-ID', req.id);
+  next();
+});
+
 // Input sanitization middleware
-import sanitizeInput from "./middleware/validateInput.js";
 app.use(sanitizeInput);
 
 // Routes
