@@ -121,9 +121,8 @@ const OrderSchema = new mongoose.Schema(
   },
 );
 
-// Indexes for common queries
+// Indexes for common queries (transactionId already indexed via index: true in schema)
 OrderSchema.index({ createdAt: -1 });
-OrderSchema.index({ "payment.transactionId": 1 });
 OrderSchema.index({ status: 1 });
 OrderSchema.index({ "customer.email": 1 });
 

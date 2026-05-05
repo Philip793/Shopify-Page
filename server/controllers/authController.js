@@ -14,15 +14,18 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 // Validate required environment variables
 if (!JWT_SECRET) {
-  console.error("❌ FATAL: JWT_SECRET environment variable is required");
-  console.error("   Generate one with: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"");
-  process.exit(1);
+  throw new Error(
+    "Missing JWT_SECRET environment variable. " +
+    "Generate one with: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\""
+  );
 }
 
-// Initialize admin user in database (only if credentials provided)
+// Admin initialization - requires explicit credentials (no fallbacks)
+// Set ADMIN_EMAIL and ADMIN_PASSWORD in .env to auto-create admin on startup
 const initAdmin = async () => {
   if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-    console.warn("⚠️  ADMIN_EMAIL or ADMIN_PASSWORD not set - skipping admin initialization");
+    console.log("ℹ️  Admin credentials not set (ADMIN_EMAIL, ADMIN_PASSWORD) - skipping auto-initialization");
+    console.log("   To create an admin, set both variables in your .env file");
     return;
   }
   

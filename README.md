@@ -94,65 +94,114 @@ This project demonstrates production-style payment architecture, secure credenti
 
 ## Installation & Setup
 
-### 1. Clone the Repository
+### Prerequisites
+- **Node.js** 18+ and npm
+- **MongoDB** (local or MongoDB Atlas)
+- **Stripe account** (for payments)
+- **Braintree account** (optional, for PayPal)
+
+### 1. Clone and Install
 ```bash
 git clone https://github.com/Philip793/Shopify-Page.git
 cd Shopify-Page
-```
-### 2. Install Dependencies
-
-From the root directory (installs both frontend and backend dependencies):
-```bash
 npm install
 ```
-### 3. Environment Variables
 
-Create a `.env` file in the **root** directory:
+### 2. Configure Environment Variables
+
+Create a `.env` file in the project **root**:
+
 ```bash
-# Database
+# ==========================================
+# Required: Database
+# ==========================================
 MONGODB_URI=mongodb://localhost:27017/shopify_portal
+# Or MongoDB Atlas: mongodb+srv://user:pass@cluster.mongodb.net/shopify_portal
 
-# Authentication
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=admin123
+# ==========================================
+# Required: JWT Authentication
+# Generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+# ==========================================
+JWT_SECRET=your-64-character-random-string-here
 
-# Stripe
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+# ==========================================
+# Optional: Admin Auto-Setup (creates admin user on startup)
+# If not set, admin must be created manually via API
+# ==========================================
+ADMIN_EMAIL=admin@yourdomain.com
+ADMIN_PASSWORD=your-secure-password-here
 
-# Braintree
+# ==========================================
+# Required: Stripe Payments
+# Get keys from: https://dashboard.stripe.com/apikeys
+# ==========================================
+STRIPE_SECRET_KEY=sk_test_...
+REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# ==========================================
+# Optional: Braintree (PayPal support)
+# Get keys from: https://developer.paypal.com/braintree
+# ==========================================
+BRAINTREE_ENVIRONMENT=sandbox
 BRAINTREE_MERCHANT_ID=your_merchant_id
 BRAINTREE_PUBLIC_KEY=your_public_key
 BRAINTREE_PRIVATE_KEY=your_private_key
 
-# Frontend URL (for CORS)
+# ==========================================
+# Application URLs
+# ==========================================
 FRONTEND_URL=http://localhost:3000
-```
-### 4. Run the Application
-
-**Backend** (from root directory):
-```bash
-npm run server
+PORT=4242
+NODE_ENV=development
 ```
 
-**Frontend** (in a new terminal, from root directory):
-```bash
-npm start
-```
+### 3. Start MongoDB
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:4242
-- Health check: http://localhost:4242/health
-
-### 5. Verify MongoDB
-
-Ensure MongoDB is running locally:
+**Local MongoDB:**
 ```bash
 mongod
 ```
 
-Or use MongoDB Atlas for cloud database.
+**Or use MongoDB Atlas** - just update `MONGODB_URI` in `.env`.
+
+### 4. Run the Application
+
+**Backend** (Terminal 1):
+```bash
+npm run server
+# Server starts on http://localhost:4242
+```
+
+**Frontend** (Terminal 2):
+```bash
+npm start
+# React app starts on http://localhost:3000
+```
+
+### 5. Verify Setup
+
+| Check | URL | Expected |
+|-------|-----|----------|
+| API Health | http://localhost:4242/health | `{"status":"healthy"}` |
+| Frontend | http://localhost:3000 | Shop page loads |
+| Login | http://localhost:3000/login | Login form appears |
+
+### First-Time Setup
+
+1. **Register a customer account** at `/register`
+2. **Or login as admin** (if `ADMIN_EMAIL`/`ADMIN_PASSWORD` set in `.env`)
+3. **Add products to cart** and proceed through checkout
+4. **Complete test payment** using Stripe test card: `4242 4242 4242 4242`
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `Missing JWT_SECRET` | Generate with: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
+| `Missing REACT_APP_STRIPE_PUBLISHABLE_KEY` | Add to `.env`, restart frontend |
+| MongoDB connection failed | Verify `mongod` is running or check Atlas connection string |
+| Port 4242 in use | Kill process: `npx kill-port 4242` |
+| Stripe payment fails | Verify Stripe keys are test keys (start with `pk_test_` / `sk_test_`)
 
 ---
 
