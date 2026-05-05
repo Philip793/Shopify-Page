@@ -77,16 +77,75 @@ This project demonstrates production-style payment architecture, secure credenti
 
 ## Project Structure
 ```bash
-/client
-  /src
-    /components
-    /context
-    /pages
-    App.js
+/public
+  /images
+    /products
+  index.html
+  manifest.json
+
+/src
+  /components
+    AboutSection.js
+    AboutUsPage.js
+    Banner.js
+    BlogArea.js
+    BlogPage.js
+    BlogPostPage.js
+    CartPage.js
+    CheckoutPage.js
+    ContactPage.js
+    FAQPage.js
+    FeaturedPage.js
+    FeaturedProducts.js
+    Footer.js
+    HomePage.js
+    LoginPage.js
+    Navbar.js
+    NotFoundPage.js
+    OrderSummary.js
+    OurStoryPage.js
+    PaymentCancel.js
+    PaymentSuccess.js
+    ProductPageFinal.js
+    ReturnsPage.js
+    SEO.js
+    ShippingInfoPage.js
+    ShopPage.js
+    WelcomeSection.js
+  /context
+    AuthContext.js
+    CartContext.js
+  /data
+    products.js
+  App.js
+  index.css
+  index.js
 
 /server
-  routes/
-  controllers/
+  /config
+    braintree.js
+    database.js
+    stripe.js
+  /controllers
+    authController.js
+    braintreeController.js
+    orderController.js
+    stripeController.js
+  /data
+    productCatalog.js
+  /middleware
+    authMiddleware.js
+    productValidation.js
+    validateInput.js
+  /models
+    Inventory.js
+    LoginAttempt.js
+    Order.js
+    User.js
+  /routes
+    payments.js
+  /services
+    inventoryService.js
   server.js
 ```
 
@@ -225,10 +284,5 @@ npm start
 - Unit and integration testing
 - Cloud deployment with performance optimizations
 - Currently preparing for live deployment
-
----
-
-## Screenshots
-(Add screenshots of checkout UI, Stripe payment element, PayPal flow, etc.)
 
 ---
