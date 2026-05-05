@@ -35,7 +35,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-helmet-async": "^3.0.0",
-    "react-router-dom": "^7.9.5",
+    "react-router-dom": "^6.30.3",
     "react-scripts": "5.0.1",
     "stripe": "^19.2.0",
     "uuid": "^11.0.3",
@@ -55,6 +55,11 @@
     "extends": [
       "react-app",
       "react-app/jest"
+    ]
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(react-router|react-router-dom)/)"
     ]
   },
   "browserslist": {

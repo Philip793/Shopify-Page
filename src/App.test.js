@@ -1,158 +1,179 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
-import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 
 // Mock window.scrollTo for router
-const mockScrollTo = jest.fn();
-window.scrollTo = mockScrollTo;
+window.scrollTo = jest.fn();
 
 // Mock fetch for API calls
 global.fetch = jest.fn();
 
-const renderWithProviders = (component) => {
-  return render(
-    <HelmetProvider>
-      <AuthProvider>
-        <CartProvider>
-          <BrowserRouter>{component}</BrowserRouter>
-        </CartProvider>
-      </AuthProvider>
-    </HelmetProvider>,
-  );
-};
+beforeEach(() => {
+  fetch.mockClear();
+});
+
+const AllProviders = ({ children }) => (
+  <HelmetProvider>
+    <AuthProvider>
+      <CartProvider>{children}</CartProvider>
+    </AuthProvider>
+  </HelmetProvider>
+);
 
 // ==========================================
-// App Smoke Test
+// 1. App renders without crashing
 // ==========================================
 test("app renders without crashing", () => {
-  renderWithProviders(<App />);
-  expect(document.body).toBeInTheDocument();
+  render(<App />, { wrapper: AllProviders });
+
+  expect(screen.getByRole("link", { name: /home/i })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /shop/i })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /cart/i })).toBeInTheDocument();
 });
 
 // ==========================================
-// Cart Functionality Tests
+// 2. Cart empty state appears
 // ==========================================
-test("cart item can be added", async () => {
-  renderWithProviders(<App />);
+test("cart empty state appears", async () => {
+  render(<App />, { wrapper: AllProviders });
 
-  // Navigate to shop (assuming there's a shop link)
-  const shopLink = screen.getByText(/shop/i);
-  fireEvent.click(shopLink);
+  fireEvent.click(screen.getByRole("link", { name: /cart/i }));
 
-  // Look for add to cart button
   await waitFor(() => {
-    const addButton = screen.getByText(/add to cart/i);
-    expect(addButton).toBeInTheDocument();
+    expect(screen.getByText(/your cart is empty/i)).toBeInTheDocument();
+  });
+  expect(
+    screen.getByRole("button", { name: /continue shopping/i }),
+  ).toBeInTheDocument();
+});
+
+// ==========================================
+// 3. Cart page shows added items
+// ==========================================
+test("cart page shows added items", async () => {
+  render(<App />, { wrapper: AllProviders });
+
+  // Navigate to shop
+  fireEvent.click(screen.getByRole("link", { name: /shop/i }));
+  await waitFor(() => {
+    expect(screen.getByText(/shop all board games/i)).toBeInTheDocument();
+  });
+
+  // Click first product card (navigates to product page)
+  fireEvent.click(screen.getByText(/cat's eye/i));
+
+  // Wait for product page and click Add to Cart
+  await waitFor(() => {
+    expect(
+      screen.getByRole("button", { name: /add to cart/i }),
+    ).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByRole("button", { name: /add to cart/i }));
+
+  // Popup appears — click View Cart
+  await waitFor(() => {
+    expect(screen.getByText(/added to cart/i)).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByRole("button", { name: /view cart/i }));
+
+  // Verify item appears in cart with correct price
+  await waitFor(() => {
+    expect(screen.getByText(/cat's eye/i)).toBeInTheDocument();
+  });
+  expect(
+    screen.getByRole("button", { name: /proceed to checkout/i }),
+  ).toBeInTheDocument();
+});
+
+// ==========================================
+// 4. Order summary starts checkout
+// ==========================================
+test("order summary starts checkout", async () => {
+  fetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      clientSecret: "pi_test_secret",
+      orderSummary: {
+        total: 24.99,
+        items: [{ id: 1, quantity: 1 }],
+      },
+    }),
+  });
+
+  render(<App />, { wrapper: AllProviders });
+
+  // Add item to cart via shop -> product -> add to cart
+  fireEvent.click(screen.getByRole("link", { name: /shop/i }));
+  await waitFor(() => {
+    expect(screen.getByText(/shop all board games/i)).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByText(/cat's eye/i));
+  await waitFor(() => {
+    expect(
+      screen.getByRole("button", { name: /add to cart/i }),
+    ).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByRole("button", { name: /add to cart/i }));
+
+  await waitFor(() => {
+    expect(screen.getByText(/added to cart/i)).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByRole("button", { name: /view cart/i }));
+
+  // On cart page, proceed to order summary
+  await waitFor(() => {
+    expect(
+      screen.getByRole("button", { name: /proceed to checkout/i }),
+    ).toBeInTheDocument();
+  });
+  fireEvent.click(
+    screen.getByRole("button", { name: /proceed to checkout/i }),
+  );
+
+  // On order summary page, click the checkout button to trigger fetch
+  await waitFor(() => {
+    expect(screen.getByText(/order summary/i)).toBeInTheDocument();
+  });
+  fireEvent.click(
+    screen.getByRole("button", { name: /proceed to checkout/i }),
+  );
+
+  // Verify backend was called with cart items
+  await waitFor(() => {
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      "http://localhost:4242/create-checkout-session",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: expect.stringContaining("cartItems"),
+      }),
+    );
   });
 });
 
-test("cart quantity displays correctly", async () => {
-  renderWithProviders(<App />);
-
-  // Check cart icon shows count
-  const cartIcon = screen.getByTestId("cart-icon");
-  expect(cartIcon).toBeInTheDocument();
-});
-
-test("empty cart message appears when cart is empty", async () => {
-  renderWithProviders(<App />);
-
-  // Navigate to cart
-  const cartLink = screen.getByText(/cart/i);
-  fireEvent.click(cartLink);
-
-  // Check for empty cart message
-  await waitFor(() => {
-    const emptyMessage = screen.getByText(/your cart is empty|no items/i);
-    expect(emptyMessage).toBeInTheDocument();
-  });
-});
-
 // ==========================================
-// Checkout Tests
+// 5. Login form shows validation errors
 // ==========================================
-test("checkout button renders when items in cart", async () => {
-  renderWithProviders(<App />);
+test("login form shows validation errors", async () => {
+  render(<App />, { wrapper: AllProviders });
 
-  // Navigate to cart
-  const cartLink = screen.getByText(/cart/i);
-  fireEvent.click(cartLink);
-
-  // Check for checkout button (may be disabled when empty)
-  const checkoutButton = screen.getByText(/checkout/i);
-  expect(checkoutButton).toBeInTheDocument();
-});
-
-// ==========================================
-// Authentication Tests
-// ==========================================
-test("login form renders", async () => {
-  renderWithProviders(<App />);
-
-  // Navigate to login
-  const loginLink = screen.getByText(/login/i);
-  fireEvent.click(loginLink);
-
-  // Check form elements
-  await waitFor(() => {
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    const submitButton = screen.getByText(/sign in|login/i);
-
-    expect(emailInput).toBeInTheDocument();
-    expect(passwordInput).toBeInTheDocument();
-    expect(submitButton).toBeInTheDocument();
-  });
-});
-
-test("login form shows error with invalid credentials", async () => {
-  renderWithProviders(<App />);
-
-  // Navigate to login
-  const loginLink = screen.getByText(/login/i);
-  fireEvent.click(loginLink);
+  // Navigate to login page
+  fireEvent.click(screen.getByRole("link", { name: /login/i }));
 
   await waitFor(() => {
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    const submitButton = screen.getByText(/sign in|login/i);
+    expect(screen.getByText(/sign in to your account/i)).toBeInTheDocument();
+  });
 
-    // Enter invalid credentials
-    fireEvent.change(emailInput, { target: { value: "invalid@email.com" } });
-    fireEvent.change(passwordInput, { target: { value: "wrongpassword" } });
-    fireEvent.click(submitButton);
+  const submitButton = screen.getByRole("button", { name: /sign in/i });
+  fireEvent.click(submitButton);
 
-    // Check for error message
-    const errorMessage = screen.getByText(/invalid|error|failed/i);
-    expect(errorMessage).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText(/email and password are required/i),
+    ).toBeInTheDocument();
   });
 });
-
-// ==========================================
-// Navigation Tests
-// ==========================================
-test("navbar navigation links work", () => {
-  renderWithProviders(<App />);
-
-  // Check main navigation links exist
-  expect(screen.getByText(/home/i)).toBeInTheDocument();
-  expect(screen.getByText(/shop/i)).toBeInTheDocument();
-  expect(screen.getByText(/cart/i)).toBeInTheDocument();
-});
-
-// ==========================================
-// TODO: Future Test Coverage
-// ==========================================
-// The following tests require more setup (mocking Stripe, API responses):
-//
-// - Payment form renders with Stripe Elements
-// - Successful payment flow
-// - Payment error handling
-// - Inventory check before checkout
-// - Order confirmation page
-// - User registration flow
-// - Password reset flow
-// - Admin dashboard access
