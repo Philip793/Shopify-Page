@@ -5,6 +5,11 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
+    // Require MONGODB_URI in production
+    if (process.env.NODE_ENV === "production" && !process.env.MONGODB_URI) {
+      throw new Error("MONGODB_URI environment variable is required in production");
+    }
+
     const mongoUri =
       process.env.MONGODB_URI || "mongodb://localhost:27017/shopify-portal";
 
