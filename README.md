@@ -64,9 +64,9 @@ The system was designed with clear separation between UI, state management, and 
 ### Backend
 
 - REST API endpoints for:
-  - Creating Stripe PaymentIntent
+  - Creating secure checkout sessions (server-side price calculation)
   - Generating Braintree client tokens
-  - Processing Braintree transactions
+  - Processing Braintree transactions with cart validation
 - Secure handling of payment credentials via environment variables
 - Server-side transaction confirmation
 
@@ -259,7 +259,7 @@ npm start
 
 ### First-Time Setup
 
-1. **Register a customer account** at `/register`
+1. **Register a customer account** via the "Create Account" option on the login page
 2. **Or login as admin** (if `ADMIN_EMAIL`/`ADMIN_PASSWORD` set in `.env`)
 3. **Add products to cart** and proceed through checkout
 4. **Complete test payment** using Stripe test card: `4242 4242 4242 4242`
@@ -293,10 +293,8 @@ npm start
 
 ## Future Enhancements
 
-- Order persistence with database integration
 - Merchant dashboard for transaction monitoring
 - Payment status logging & analytics
-- Unit and integration testing
 - Cloud deployment with performance optimizations
 - Currently preparing for live deployment
 

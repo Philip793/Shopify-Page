@@ -40,7 +40,7 @@
 
 - ✅ XSS prevention via HTML escaping
 - ✅ Email normalization
-- ✅ Password strength requirements (6+ chars, 1 letter, 1 number)
+- ✅ Password strength requirements (8+ chars, uppercase, lowercase, number)
 - ✅ Request body size limit (10KB)
 - ✅ Trim whitespace from inputs
 
@@ -71,14 +71,14 @@ These endpoints calculate order totals server-side from the trusted product cata
 - `POST /braintree/checkout-with-cart` - Braintree checkout with server-calculated amount
 - `POST /confirm-payment` - Payment validation before order creation
 
-#### ⚠️ Development-Only Legacy Endpoints
+#### 🗑️ Removed Legacy Endpoints
 
-These endpoints accept amounts from the frontend (security risk) and are **automatically disabled in production**:
+These endpoints previously accepted amounts from the frontend (security risk). They have been **completely removed** from the codebase:
 
-- `POST /create-payment-intent` - ⚠️ Accepts amount from frontend
-- `POST /braintree/checkout` - ⚠️ Accepts amount from frontend
+- `POST /create-payment-intent` - ❌ Removed (was accepting frontend amount)
+- `POST /braintree/checkout` - ❌ Removed (was accepting frontend amount)
 
-The legacy endpoints are restricted to `NODE_ENV !== "production"` to prevent price tampering attacks.
+Use the secure endpoints above which calculate totals server-side.
 
 ---
 
@@ -86,7 +86,7 @@ The legacy endpoints are restricted to `NODE_ENV !== "production"` to prevent pr
 
 ### HTTPS (CRITICAL)
 
-**Current:** HTTP only (localhost development)
+**Current:** HTTPS enforcement added in production (redirects HTTP to HTTPS)
 **Required for Production:**
 
 ```javascript
