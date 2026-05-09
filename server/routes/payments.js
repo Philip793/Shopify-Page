@@ -37,7 +37,7 @@ router.post("/confirm-payment", confirmPayment);
 
 // Braintree routes - Secure endpoints only (calculate totals server-side)
 router.get("/braintree/token", getClientToken);
-router.post("/braintree/checkout-with-cart", checkoutWithCart);
+router.post("/braintree/checkout-with-cart", authenticate, checkoutWithCart);
 
 // Order routes - admin only for list/all, optional auth for single order
 router.get("/orders", authenticate, requireAdmin, getOrders);

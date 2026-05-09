@@ -174,7 +174,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 4242;
+const PORT = process.env.SERVER_PORT || 4242;
 const isDev = process.env.NODE_ENV !== "production";
 
 app.listen(PORT, () => {

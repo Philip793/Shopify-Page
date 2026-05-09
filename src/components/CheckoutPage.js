@@ -18,6 +18,7 @@ import SEO from "./SEO.js";
 // -----------------------------
 const stripeKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
 
+
 if (!stripeKey) {
   throw new Error(
     "Missing REACT_APP_STRIPE_PUBLISHABLE_KEY environment variable. Please set it in your .env file.",
@@ -124,7 +125,12 @@ const CheckoutPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { cart } = useCart();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const {
+    isAuthenticated,
+    loading: authLoading,
+    getToken,
+    user,
+  } = useAuth();
   const isLoggedIn = isAuthenticated();
 
   // Get checkout session data from OrderSummary page
@@ -196,13 +202,25 @@ const CheckoutPage = () => {
 
       // Send to secure endpoint that calculates total on backend
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || "http://localhost:4242"}/braintree/checkout-with-cart`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nonce, cartItems }),
-        },
-      );
+  `${process.env.REACT_APP_API_URL || "http://localhost:4242"}/braintree/checkout-with-cart`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({
+      nonce,
+      cartItems,
+      shippingCountry: orderSummary?.shippingCountry || "AU",
+      customer: {
+        email: user?.email,
+        name: orderSummary?.shippingAddress?.fullName || user?.name,
+      },
+      shippingAddress: orderSummary?.shippingAddress,
+    }),
+  }
+);
       const data = await res.json();
 
       if (data.success) {

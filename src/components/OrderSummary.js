@@ -142,13 +142,20 @@ const OrderSummary = () => {
 
       // Navigate to checkout with the session data
       navigate("/checkout", {
-        state: {
-          clientSecret: data.clientSecret,
-          paymentIntentId: data.paymentIntentId,
-          pendingOrderId: data.pendingOrderId,
-          orderSummary: data.orderSummary,
-        },
-      });
+  state: {
+    clientSecret: data.clientSecret,
+    paymentIntentId: data.paymentIntentId,
+    pendingOrderId: data.pendingOrderId,
+    orderSummary: {
+      ...data.orderSummary,
+      customer: {
+        email: savedUser?.email,
+        name: shippingAddress.fullName || savedUser?.name,
+      },
+      shippingAddress,
+    },
+  },
+});
     } catch (err) {
       console.error("Checkout error:", err);
       setError(err.message || "Failed to start checkout. Please try again.");

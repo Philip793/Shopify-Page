@@ -35,7 +35,13 @@ export const getClientToken = async (req, res) => {
 export const checkoutWithCart = async (req, res) => {
   try {
     console.log("Request received at /braintree/checkout-with-cart");
-    const { nonce, cartItems } = req.body;
+    const {
+  nonce,
+  cartItems,
+  shippingCountry = "AU",
+  customer = {},
+  shippingAddress = {},
+} = req.body;
 
     // Validate inputs
     if (!nonce) {
@@ -55,56 +61,52 @@ export const checkoutWithCart = async (req, res) => {
     }
 
     // Calculate total from trusted product catalog (prevents price tampering)
-    const orderSummary = calculateCartTotal(cartItems);
+const orderSummary = calculateCartTotal(cartItems, { shippingCountry });
 
     console.log("Processing Braintree payment for amount:", orderSummary.total);
 
     // Create a transaction sale with the calculated amount
-    const result = await gateway.transaction.sale({
-      amount: orderSummary.total,
-      paymentMethodNonce: nonce,
-      options: {
-        submitForSettlement: true,
-      },
-      orderId: `ORDER-${Date.now()}`,
-      customFields: {
-        subtotal: orderSummary.subtotal,
-        shipping: orderSummary.shipping,
-        items: JSON.stringify(
-          orderSummary.items.map((item) => ({
-            id: item.id,
-            name: item.name,
-            quantity: item.quantity,
-          })),
-        ),
-      },
-    });
-
+   const result = await gateway.transaction.sale({
+  amount: orderSummary.total,
+  paymentMethodNonce: nonce,
+  options: {
+    submitForSettlement: true,
+  },
+  orderId: `ORDER-${Date.now()}`,
+});
     if (result.success) {
       console.log("Braintree transaction successful:", result.transaction.id);
 
       // Prepare order data for database
-      const orderData = {
-        items: orderSummary.items.map((item) => ({
-          productId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          sku: `SKU-${item.id}`,
-        })),
-        subtotal: parseFloat(orderSummary.subtotal),
-        shipping: parseFloat(orderSummary.shipping),
-        total: parseFloat(orderSummary.total),
-        currency: "AUD",
-        payment: {
-          provider: "braintree",
-          transactionId: result.transaction.id,
-          status: "completed",
-          paidAt: new Date(),
-        },
-        status: "pending",
-      };
-
+    const orderData = {
+  customer,
+  shippingAddress: {
+    ...shippingAddress,
+    country: orderSummary.shippingCountry === "US" ? "United States" : "Australia",
+  },
+  items: orderSummary.items.map((item) => ({
+    productId: item.id,
+    name: item.name,
+    price: item.price,
+    quantity: item.quantity,
+    sku: item.sku || `SKU-${item.id}`,
+  })),
+  subtotal: parseFloat(orderSummary.subtotal),
+  shipping: parseFloat(orderSummary.shipping),
+  total: parseFloat(orderSummary.total),
+  currency: "AUD",
+  payment: {
+    provider: "braintree",
+    transactionId: result.transaction.id,
+    status: "completed",
+    paidAt: new Date(),
+  },
+  status: "pending",
+  metadata: {
+    shippingCountry: orderSummary.shippingCountry,
+    braintreeTransactionId: result.transaction.id,
+  },
+};
       // Save order to database (non-blocking)
       const order = await createOrder(orderData);
 
