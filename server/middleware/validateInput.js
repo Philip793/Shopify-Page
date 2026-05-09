@@ -14,9 +14,13 @@ export const sanitizeInput = (req, res, next) => {
         req.body[key] = validator.escape(req.body[key]);
 
         // Normalize email if it's an email field
-        if (key === "email" || key.includes("email")) {
-          req.body[key] = validator.normalizeEmail(req.body[key]);
-        }
+
+if (key === "email" || key.includes("email")) {
+  req.body[key] = validator.normalizeEmail(req.body[key], {
+    gmail_remove_dots: false,
+    gmail_remove_subaddress: false,
+  });
+}
       }
     });
   }
