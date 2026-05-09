@@ -2,8 +2,9 @@ import gateway from "../config/braintree.js";
 import { calculateCartTotal } from "../data/productCatalog.js";
 import { createOrder } from "./orderController.js";
 import {
-  checkInventory,
-  reduceInventory,
+  reserveInventory,
+  confirmInventory,
+  releaseInventory,
 } from "../services/inventoryService.js";
 
 /**
@@ -11,7 +12,6 @@ import {
  */
 export const getClientToken = async (req, res) => {
   try {
-    // Optionally attach a customerId if provided
     const response = await gateway.clientToken.generate({
       customerId: req.query.customerId,
     });
@@ -24,112 +24,169 @@ export const getClientToken = async (req, res) => {
 };
 
 /**
- * Legacy checkout endpoint (REMOVED - security risk)
- * This endpoint accepted amount from frontend, enabling price tampering.
- * Use /braintree/checkout-with-cart instead, which calculates totals server-side.
- */
-
-/**
  * Secure checkout endpoint - calculates total from trusted product data
  */
 export const checkoutWithCart = async (req, res) => {
+  let inventoryReserved = false;
+  let paymentSucceeded = false;
+  let transactionId = null;
+
   try {
     console.log("Request received at /braintree/checkout-with-cart");
+
     const {
-  nonce,
-  cartItems,
-  shippingCountry = "AU",
-  customer = {},
-  shippingAddress = {},
-} = req.body;
+      nonce,
+      cartItems,
+      shippingCountry = "AU",
+      customer = {},
+      shippingAddress = {},
+    } = req.body;
 
     // Validate inputs
     if (!nonce) {
       return res.status(400).send({ error: "Payment nonce is required" });
     }
+
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
       return res.status(400).send({ error: "Invalid or empty cart" });
     }
 
-    // Check inventory availability before proceeding
-    const inventoryCheck = await checkInventory(cartItems);
-    if (!inventoryCheck.available) {
-      return res.status(400).send({
-        error: "Insufficient inventory",
-        details: inventoryCheck.insufficientItems,
-      });
-    }
+    // Only allow supported shipping countries
+    const normalisedShippingCountry =
+      shippingCountry === "US" || shippingCountry === "AU"
+        ? shippingCountry
+        : "AU";
 
-    // Calculate total from trusted product catalog (prevents price tampering)
-const orderSummary = calculateCartTotal(cartItems, { shippingCountry });
+    // Use authenticated user where possible.
+    // Do not fully trust customer details from the frontend.
+    const safeCustomer = {
+      email: req.user?.email || customer.email || "",
+      name: customer.name || req.user?.name || "Customer",
+    };
+
+    // Calculate total from trusted product catalog
+    const orderSummary = calculateCartTotal(cartItems, {
+      shippingCountry: normalisedShippingCountry,
+    });
 
     console.log("Processing Braintree payment for amount:", orderSummary.total);
 
-    // Create a transaction sale with the calculated amount
-   const result = await gateway.transaction.sale({
-  amount: orderSummary.total,
-  paymentMethodNonce: nonce,
-  options: {
-    submitForSettlement: true,
-  },
-  orderId: `ORDER-${Date.now()}`,
-});
-    if (result.success) {
-      console.log("Braintree transaction successful:", result.transaction.id);
+    // Reserve inventory before charging
+    const reservationResult = await reserveInventory(cartItems);
 
-      // Prepare order data for database
-    const orderData = {
-  customer,
-  shippingAddress: {
-    ...shippingAddress,
-    country: orderSummary.shippingCountry === "US" ? "United States" : "Australia",
-  },
-  items: orderSummary.items.map((item) => ({
-    productId: item.id,
-    name: item.name,
-    price: item.price,
-    quantity: item.quantity,
-    sku: item.sku || `SKU-${item.id}`,
-  })),
-  subtotal: parseFloat(orderSummary.subtotal),
-  shipping: parseFloat(orderSummary.shipping),
-  total: parseFloat(orderSummary.total),
-  currency: "AUD",
-  payment: {
-    provider: "braintree",
-    transactionId: result.transaction.id,
-    status: "completed",
-    paidAt: new Date(),
-  },
-  status: "pending",
-  metadata: {
-    shippingCountry: orderSummary.shippingCountry,
-    braintreeTransactionId: result.transaction.id,
-  },
-};
-      // Save order to database (non-blocking)
-      const order = await createOrder(orderData);
-
-      // Reduce inventory after successful payment
-      const inventoryResult = await reduceInventory(cartItems);
-      if (!inventoryResult.success) {
-        console.error("⚠️ Inventory reduction failed:", inventoryResult.errors);
-        // Don't fail the response - order is already saved and paid
-      }
-
-      res.send({
-        success: true,
-        transactionId: result.transaction.id,
-        orderSummary,
-        orderId: order?.orderId,
-        inventoryUpdated: inventoryResult.success,
+    if (!reservationResult.success) {
+      return res.status(400).send({
+        success: false,
+        error: "Insufficient inventory",
+        details: reservationResult.errors,
       });
-    } else {
-      console.error("Braintree transaction failed:", result.message);
-      res.status(400).send({ success: false, error: result.message });
     }
+
+    inventoryReserved = true;
+
+    // Charge Braintree
+    const result = await gateway.transaction.sale({
+      amount: orderSummary.total,
+      paymentMethodNonce: nonce,
+      options: {
+        submitForSettlement: true,
+      },
+      orderId: `ORDER-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      console.error("Braintree transaction failed:", result.message);
+
+      // Payment failed, so release reserved inventory
+      await releaseInventory(cartItems);
+
+      return res.status(400).send({
+        success: false,
+        error: result.message,
+      });
+    }
+
+    paymentSucceeded = true;
+    transactionId = result.transaction.id;
+
+    console.log("Braintree transaction successful:", transactionId);
+
+    // Prepare order data for database
+    const orderData = {
+      customer: safeCustomer,
+
+      shippingAddress: {
+        ...shippingAddress,
+        country:
+          orderSummary.shippingCountry === "US"
+            ? "United States"
+            : "Australia",
+      },
+
+      items: orderSummary.items.map((item) => ({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        sku: item.sku || `SKU-${item.id}`,
+      })),
+
+      subtotal: parseFloat(orderSummary.subtotal),
+      shipping: parseFloat(orderSummary.shipping),
+      total: parseFloat(orderSummary.total),
+      currency: "AUD",
+
+      payment: {
+        provider: "braintree",
+        transactionId,
+        status: "completed",
+        paidAt: new Date(),
+      },
+
+      status: "pending",
+
+      metadata: {
+        shippingCountry: orderSummary.shippingCountry,
+        braintreeTransactionId: transactionId,
+      },
+    };
+
+    // Save order to database
+    const order = await createOrder(orderData);
+
+    // Convert reserved inventory into sold inventory
+    const inventoryResult = await confirmInventory(cartItems);
+
+    if (!inventoryResult.success) {
+      console.error("⚠️ Inventory confirmation failed:", inventoryResult.errors);
+      // Do not fail the payment response. The customer has already paid.
+      // You should manually review this order.
+    }
+
+    return res.send({
+      success: true,
+      transactionId,
+      orderSummary,
+      orderId: order?.orderId,
+      inventoryUpdated: inventoryResult.success,
+    });
   } catch (err) {
     console.error("Braintree checkout error:", err);
-    res.status(500).send({ error: err.message });
+
+    // Only release inventory if payment did NOT succeed.
+    // If payment succeeded, do not release stock back for resale.
+    if (inventoryReserved && !paymentSucceeded) {
+      try {
+        await releaseInventory(req.body.cartItems || []);
+      } catch (releaseErr) {
+        console.error("Failed to release inventory after error:", releaseErr);
+      }
+    }
+
+    return res.status(500).send({
+      success: false,
+      error: err.message,
+      transactionId,
+    });
   }
 };
