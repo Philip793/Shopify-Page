@@ -33,6 +33,18 @@ const UserSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    shippingAddress: {
+      fullName: { type: String, trim: true },
+      street: { type: String, trim: true },
+      city: { type: String, trim: true },
+      state: { type: String, trim: true },
+      zip: { type: String, trim: true },
+      country: {
+        type: String,
+        enum: ["AU", "US"],
+      },
+      phone: { type: String, trim: true },
+    },
   },
   {
     timestamps: true,

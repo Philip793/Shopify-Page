@@ -97,6 +97,15 @@ const OrderSchema = new mongoose.Schema(
         type: Date,
       },
     },
+    email: {
+      confirmationSentAt: {
+        type: Date,
+      },
+      confirmationError: {
+        type: String,
+        trim: true,
+      },
+    },
     status: {
       type: String,
       required: true,
@@ -104,11 +113,13 @@ const OrderSchema = new mongoose.Schema(
       default: "pending",
     },
     shippingAddress: {
+      fullName: { type: String, trim: true },
       street: { type: String, trim: true },
       city: { type: String, trim: true },
       state: { type: String, trim: true },
       zip: { type: String, trim: true },
       country: { type: String, trim: true, default: "Australia" },
+      phone: { type: String, trim: true },
     },
     metadata: {
       type: Map,

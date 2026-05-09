@@ -18,6 +18,7 @@ import {
   login,
   getMe,
   logout,
+  updateShippingAddress,
 } from "../controllers/authController.js";
 import { authenticate, requireAdmin } from "../middleware/authMiddleware.js";
 
@@ -27,10 +28,11 @@ const router = express.Router();
 router.post("/auth/register", register);
 router.post("/auth/login", login);
 router.get("/auth/me", authenticate, getMe);
+router.patch("/auth/shipping-address", authenticate, updateShippingAddress);
 router.post("/auth/logout", authenticate, logout);
 
 // Stripe routes - Secure endpoints only (calculate totals server-side)
-router.post("/create-checkout-session", createCheckoutSession);
+router.post("/create-checkout-session", authenticate, createCheckoutSession);
 router.post("/confirm-payment", confirmPayment);
 
 // Braintree routes - Secure endpoints only (calculate totals server-side)

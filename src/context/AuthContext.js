@@ -21,15 +21,45 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
 
-    if (token && savedUser) {
+    const verifySavedSession = async () => {
+      if (!token || !savedUser) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setUser(JSON.parse(savedUser));
       } catch (e) {
         console.error("Failed to parse saved user:", e);
         logout();
+        setLoading(false);
+        return;
       }
-    }
-    setLoading(false);
+
+      try {
+        const response = await fetch(`${API_URL}/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          logout();
+          return;
+        }
+
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setUser(data.user);
+      } catch (error) {
+        console.error("Session verification error:", error);
+        logout();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifySavedSession();
   }, []);
 
   const login = async (email, password) => {
@@ -104,6 +134,53 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem("token");
   };
 
+  const updateShippingAddress = async (shippingAddress) => {
+    const token = getToken();
+
+    if (!token) {
+      return { success: false, error: "Please log in to continue checkout." };
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/auth/shipping-address`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ shippingAddress }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        if (response.status === 401) {
+          logout();
+          return {
+            success: false,
+            authExpired: true,
+            error: "Your session expired. Please log in again.",
+          };
+        }
+
+        return {
+          success: false,
+          error: data.error || "Failed to save shipping address.",
+        };
+      }
+
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+      return { success: true, user: data.user };
+    } catch (error) {
+      console.error("Update shipping address error:", error);
+      return {
+        success: false,
+        error: "Failed to save shipping address. Please try again.",
+      };
+    }
+  };
+
   const isAuthenticated = () => {
     return !!user && !!localStorage.getItem("token");
   };
@@ -114,6 +191,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     getToken,
+    updateShippingAddress,
     isAuthenticated,
     loading,
   };

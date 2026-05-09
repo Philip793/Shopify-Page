@@ -71,11 +71,13 @@ const PendingOrderSchema = new mongoose.Schema(
       name: { type: String, trim: true },
     },
     shippingAddress: {
+      fullName: { type: String, trim: true },
       street: { type: String, trim: true },
       city: { type: String, trim: true },
       state: { type: String, trim: true },
       zip: { type: String, trim: true },
       country: { type: String, trim: true },
+      phone: { type: String, trim: true },
     },
     stripePaymentIntentId: {
       type: String,

@@ -50,6 +50,42 @@ export const initAdmin = async () => {
 
 const JWT_EXPIRES_IN = "7d";
 
+const normalizeUser = (user) => ({
+  email: user.email,
+  name: user.name,
+  role: user.role,
+  shippingAddress: user.shippingAddress,
+});
+
+const normalizeShippingAddress = (address = {}) => {
+  return {
+    fullName: String(address.fullName || "").trim(),
+    street: String(address.street || "").trim(),
+    city: String(address.city || "").trim(),
+    state: String(address.state || "").trim(),
+    zip: String(address.zip || "").trim(),
+    country: String(address.country || "AU")
+      .trim()
+      .toUpperCase(),
+    phone: String(address.phone || "").trim(),
+  };
+};
+
+const validateShippingAddress = (address) => {
+  const requiredFields = ["fullName", "street", "city", "state", "zip"];
+  const missing = requiredFields.filter((field) => !address[field]);
+
+  if (missing.length > 0) {
+    return `Missing shipping address fields: ${missing.join(", ")}`;
+  }
+
+  if (!["AU", "US"].includes(address.country)) {
+    return "Shipping country must be Australia or United States";
+  }
+
+  return null;
+};
+
 /**
  * Generate JWT token
  */
@@ -113,11 +149,7 @@ export const register = async (req, res) => {
       success: true,
       message: "User registered successfully",
       token,
-      user: {
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      user: normalizeUser(user),
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -317,11 +349,7 @@ export const login = async (req, res) => {
       success: true,
       message: "Login successful",
       token,
-      user: {
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      user: normalizeUser(user),
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -349,17 +377,56 @@ export const getMe = async (req, res) => {
 
     res.json({
       success: true,
-      user: {
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      user: normalizeUser(user),
     });
   } catch (error) {
     console.error("Get user error:", error);
     res.status(500).json({
       success: false,
       error: "Failed to get user",
+    });
+  }
+};
+
+/**
+ * Save the current user's default shipping address.
+ */
+export const updateShippingAddress = async (req, res) => {
+  try {
+    const address = normalizeShippingAddress(
+      req.body.shippingAddress || req.body,
+    );
+    const validationError = validateShippingAddress(address);
+
+    if (validationError) {
+      return res.status(400).json({
+        success: false,
+        error: validationError,
+      });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { email: req.user.email },
+      { shippingAddress: address },
+      { new: true, runValidators: true },
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      user: normalizeUser(user),
+    });
+  } catch (error) {
+    console.error("Update shipping address error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to save shipping address",
     });
   }
 };

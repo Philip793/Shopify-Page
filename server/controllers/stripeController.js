@@ -8,10 +8,14 @@ import {
   confirmInventory,
   releaseInventory,
 } from "../services/inventoryService.js";
+import { sendOrderConfirmationEmailOnce } from "../services/emailService.js";
 
 const PENDING_ORDER_TTL_MINUTES = 30;
 
 const toNumber = (value) => Number.parseFloat(value);
+
+const countryName = (country) =>
+  String(country || "").toUpperCase() === "US" ? "United States" : "Australia";
 
 const buildPendingOrderItems = (orderSummary) => {
   return orderSummary.items.map((item) => ({
@@ -112,9 +116,7 @@ const finalizePendingOrder = async (pendingOrder, paymentIntent) => {
     customer: pendingOrder.customer || {},
     shippingAddress: {
       ...(pendingOrder.shippingAddress || {}),
-      country:
-        pendingOrder.shippingAddress?.country ||
-        (pendingOrder.shippingCountry === "US" ? "United States" : "Australia"),
+      country: countryName(pendingOrder.shippingCountry),
     },
     metadata: {
       pendingOrderId: pendingOrder._id.toString(),
@@ -192,11 +194,7 @@ export const createCheckoutSession = async (req, res) => {
       customer,
       shippingAddress: {
         ...shippingAddress,
-        country:
-          shippingAddress.country ||
-          (orderSummary.shippingCountry === "US"
-            ? "United States"
-            : "Australia"),
+        country: countryName(orderSummary.shippingCountry),
       },
       inventoryStatus: "reserved",
       expiresAt: new Date(Date.now() + PENDING_ORDER_TTL_MINUTES * 60 * 1000),
@@ -265,12 +263,17 @@ export const confirmPayment = async (req, res) => {
     }
 
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    const order = await Order.findOne({
+    let order = await Order.findOne({
       "payment.transactionId": paymentIntentId,
     });
     const pendingOrder = await PendingOrder.findOne({
       stripePaymentIntentId: paymentIntentId,
     });
+
+    if (!order && pendingOrder && paymentIntent.status === "succeeded") {
+      order = await finalizePendingOrder(pendingOrder, paymentIntent);
+      await sendOrderConfirmationEmailOnce(order);
+    }
 
     res.json({
       success: paymentIntent.status === "succeeded",
@@ -327,6 +330,7 @@ export const handleStripeWebhook = async (req, res) => {
 
       if (event.type === "payment_intent.succeeded") {
         const order = await finalizePendingOrder(pendingOrder, paymentIntent);
+        await sendOrderConfirmationEmailOnce(order);
         return res.json({ received: true, orderId: order.orderId });
       }
 

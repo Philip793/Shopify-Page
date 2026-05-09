@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext.js";
 import { useAuth } from "../context/AuthContext.js";
@@ -12,13 +12,50 @@ const formatAudWithUsdEstimate = (amount, showUsdEstimate) => {
   return `${aud} (~$${(amount * USD_ESTIMATE_RATE).toFixed(2)} USD)`;
 };
 
+const emptyShippingAddress = {
+  fullName: "",
+  street: "",
+  city: "",
+  state: "",
+  zip: "",
+  country: "AU",
+  phone: "",
+};
+
+const getMissingAddressFields = (address) => {
+  return ["fullName", "street", "city", "state", "zip"].filter(
+    (field) => !String(address[field] || "").trim(),
+  );
+};
+
 const OrderSummary = () => {
   const { cart, cartCount } = useCart();
-  const { user } = useAuth();
+  const { user, getToken, isAuthenticated, logout, updateShippingAddress } =
+    useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [shippingCountry, setShippingCountry] = useState("AU");
+  const [shippingAddress, setShippingAddress] = useState({
+    ...emptyShippingAddress,
+    fullName: user?.name || "",
+    ...(user?.shippingAddress || {}),
+  });
+
+  useEffect(() => {
+    if (user?.shippingAddress) {
+      setShippingAddress((current) => ({
+        ...current,
+        ...user.shippingAddress,
+      }));
+    } else if (user?.name) {
+      setShippingAddress((current) => ({
+        ...current,
+        fullName: current.fullName || user.name,
+      }));
+    }
+  }, [user]);
+
+  const shippingCountry = shippingAddress.country;
 
   // Calculate totals
   const subtotal = cart.reduce(
@@ -42,28 +79,62 @@ const OrderSummary = () => {
       return;
     }
 
+    if (!isAuthenticated()) {
+      navigate("/login", { state: { from: { pathname: "/order-summary" } } });
+      return;
+    }
+
+    const missingFields = getMissingAddressFields(shippingAddress);
+    if (missingFields.length > 0) {
+      setError("Please complete all required shipping address fields.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
+      const saveAddress = await updateShippingAddress(shippingAddress);
+      if (!saveAddress.success) {
+        if (saveAddress.authExpired) {
+          navigate("/login", {
+            state: { from: { pathname: "/order-summary" } },
+          });
+          return;
+        }
+        throw new Error(saveAddress.error);
+      }
+      const savedUser = saveAddress.user || user;
+      const token = getToken();
+
       // Fetch checkout session from backend with cart items
       const response = await fetch(
         `${process.env.REACT_APP_API_URL || "http://localhost:4242"}/create-checkout-session`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             cartItems,
             shippingCountry,
             customer: {
-              email: user?.email,
-              name: user?.name,
+              email: savedUser?.email,
+              name: shippingAddress.fullName || savedUser?.name,
             },
+            shippingAddress,
           }),
         },
       );
 
       const data = await response.json();
+
+      if (response.status === 401) {
+        logout();
+        navigate("/login", { state: { from: { pathname: "/order-summary" } } });
+        return;
+      }
 
       if (data.error) {
         throw new Error(data.error);
@@ -84,6 +155,13 @@ const OrderSummary = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddressChange = (field, value) => {
+    setShippingAddress((current) => ({
+      ...current,
+      [field]: value,
+    }));
   };
 
   if (cart.length === 0) {
@@ -172,17 +250,87 @@ const OrderSummary = () => {
               {/* Shipping Info */}
               <div className="bg-white rounded-lg shadow-md mt-6 p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                  Shipping Destination
+                  Shipping Address
                 </h2>
-                <div className="space-y-3 text-sm text-gray-600">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600">
+                  <label className="block sm:col-span-2">
+                    <span className="block font-medium text-gray-700 mb-2">
+                      Full name
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingAddress.fullName}
+                      onChange={(event) =>
+                        handleAddressChange("fullName", event.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-burgundy-500 focus:outline-none focus:ring-2 focus:ring-burgundy-200"
+                      required
+                    />
+                  </label>
+                  <label className="block sm:col-span-2">
+                    <span className="block font-medium text-gray-700 mb-2">
+                      Street address
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingAddress.street}
+                      onChange={(event) =>
+                        handleAddressChange("street", event.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-burgundy-500 focus:outline-none focus:ring-2 focus:ring-burgundy-200"
+                      required
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="block font-medium text-gray-700 mb-2">
+                      City / suburb
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingAddress.city}
+                      onChange={(event) =>
+                        handleAddressChange("city", event.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-burgundy-500 focus:outline-none focus:ring-2 focus:ring-burgundy-200"
+                      required
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="block font-medium text-gray-700 mb-2">
+                      State
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingAddress.state}
+                      onChange={(event) =>
+                        handleAddressChange("state", event.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-burgundy-500 focus:outline-none focus:ring-2 focus:ring-burgundy-200"
+                      required
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="block font-medium text-gray-700 mb-2">
+                      Postcode / ZIP
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingAddress.zip}
+                      onChange={(event) =>
+                        handleAddressChange("zip", event.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-burgundy-500 focus:outline-none focus:ring-2 focus:ring-burgundy-200"
+                      required
+                    />
+                  </label>
                   <label className="block">
                     <span className="block font-medium text-gray-700 mb-2">
                       Country
                     </span>
                     <select
-                      value={shippingCountry}
+                      value={shippingAddress.country}
                       onChange={(event) =>
-                        setShippingCountry(event.target.value)
+                        handleAddressChange("country", event.target.value)
                       }
                       className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-burgundy-500 focus:outline-none focus:ring-2 focus:ring-burgundy-200"
                     >
@@ -190,7 +338,20 @@ const OrderSummary = () => {
                       <option value="US">United States</option>
                     </select>
                   </label>
-                  <p>
+                  <label className="block sm:col-span-2">
+                    <span className="block font-medium text-gray-700 mb-2">
+                      Phone number
+                    </span>
+                    <input
+                      type="tel"
+                      value={shippingAddress.phone}
+                      onChange={(event) =>
+                        handleAddressChange("phone", event.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-burgundy-500 focus:outline-none focus:ring-2 focus:ring-burgundy-200"
+                    />
+                  </label>
+                  <p className="sm:col-span-2">
                     Prices are charged in AUD. USD estimates are approximate;
                     your bank or payment provider may use a different rate.
                   </p>
