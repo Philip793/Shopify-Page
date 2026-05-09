@@ -328,9 +328,9 @@ const createStripePaymentIntent = async () => {
   const appearance = { theme: "stripe" };
   const options = { clientSecret, appearance };
 
-  if (!clientSecret || !orderSummary) {
-    return null; // Will redirect
-  }
+if (!orderSummary) {
+  return null;
+}
 
   return (
     <>
