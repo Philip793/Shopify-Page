@@ -15,6 +15,7 @@ import { validateProductCatalog } from "./middleware/productValidation.js";
 import { initializeInventory } from "./services/inventoryService.js";
 import { initAdmin } from "./controllers/authController.js";
 import sanitizeInput from "./middleware/validateInput.js";
+import { handleStripeWebhook } from "./controllers/stripeController.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -129,6 +130,13 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
+);
+
+// Stripe webhooks need the raw request body for signature verification.
+app.post(
+  "/webhooks/stripe",
+  bodyParser.raw({ type: "application/json" }),
+  handleStripeWebhook,
 );
 
 // Body parser with size limits

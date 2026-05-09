@@ -30,7 +30,7 @@ const BraintreeDropIn = BraintreeDropInModule.default;
 // -----------------------------
 // Stripe Checkout Form Component
 // -----------------------------
-const StripeCheckoutForm = ({ orderSummary }) => {
+const StripeCheckoutForm = ({ orderSummary, pendingOrderId }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -51,6 +51,9 @@ const StripeCheckoutForm = ({ orderSummary }) => {
         "pendingOrderSummary",
         JSON.stringify(orderSummary),
       );
+      if (pendingOrderId) {
+        sessionStorage.setItem("pendingOrderId", pendingOrderId);
+      }
 
       // Confirm payment with Stripe
       const { error, paymentIntent } = await stripe.confirmPayment({
@@ -73,6 +76,7 @@ const StripeCheckoutForm = ({ orderSummary }) => {
         navigate("/checkout/success", {
           state: {
             orderSummary,
+            pendingOrderId,
             transactionId: paymentIntent.id, // REAL Stripe PaymentIntent ID
           },
         });
@@ -121,10 +125,12 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cart } = useCart();
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const isLoggedIn = isAuthenticated();
 
   // Get checkout session data from OrderSummary page
   const clientSecret = location.state?.clientSecret;
   const orderSummary = location.state?.orderSummary;
+  const pendingOrderId = location.state?.pendingOrderId;
 
   // Braintree state - MUST be before any early returns
   const [braintreeToken, setBraintreeToken] = useState(null);
@@ -141,7 +147,7 @@ const CheckoutPage = () => {
 
   // Fetch Braintree token on mount
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (isLoggedIn) {
       fetch(
         `${process.env.REACT_APP_API_URL || "http://localhost:4242"}/braintree/token`,
       )
@@ -152,7 +158,7 @@ const CheckoutPage = () => {
           setError("Failed to load PayPal. Please refresh the page.");
         });
     }
-  }, []);
+  }, [isLoggedIn]);
 
   // Redirect to login if not authenticated - after all hooks
   if (authLoading) {
@@ -163,7 +169,7 @@ const CheckoutPage = () => {
     );
   }
 
-  if (!isAuthenticated()) {
+  if (!isLoggedIn) {
     return (
       <Navigate
         to="/login"
@@ -329,7 +335,10 @@ const CheckoutPage = () => {
                   Pay with Card
                 </h2>
                 <Elements options={options} stripe={stripePromise}>
-                  <StripeCheckoutForm orderSummary={orderSummary} />
+                  <StripeCheckoutForm
+                    orderSummary={orderSummary}
+                    pendingOrderId={pendingOrderId}
+                  />
                 </Elements>
               </div>
             </div>

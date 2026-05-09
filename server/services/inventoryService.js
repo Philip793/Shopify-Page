@@ -163,6 +163,51 @@ export const confirmInventory = async (cartItems) => {
 };
 
 /**
+ * Release reserved inventory for an unpaid/failed order.
+ * ATOMIC: Moves stock from reserved back to available without changing total.
+ * @param {Array} cartItems - Array of {id, quantity}
+ * @returns {Object} - { success: boolean, releasedProducts: [], errors: [] }
+ */
+export const releaseInventory = async (cartItems) => {
+  const releasedProducts = [];
+  const errors = [];
+
+  for (const item of cartItems) {
+    const inventory = await Inventory.findOne({ productId: item.id });
+
+    if (!inventory) {
+      errors.push(`Product ${item.id} not found in inventory`);
+      continue;
+    }
+
+    const result = await inventory.release(item.quantity);
+
+    if (!result) {
+      errors.push(
+        `Failed to release inventory for ${inventory.name}: reserved=${inventory.reservedStock}`,
+      );
+    } else {
+      releasedProducts.push({
+        id: item.id,
+        name: inventory.name,
+        released: item.quantity,
+        available: result.availableStock,
+      });
+
+      console.log(
+        `Inventory released: ${inventory.name} +${item.quantity} available`,
+      );
+    }
+  }
+
+  return {
+    success: errors.length === 0,
+    releasedProducts,
+    errors,
+  };
+};
+
+/**
  * Reduce inventory after successful order (legacy wrapper)
  * Now uses atomic confirm operation
  * @param {Array} cartItems - Array of {id, quantity}
@@ -319,6 +364,7 @@ export default {
   checkInventory,
   reserveInventory,
   confirmInventory,
+  releaseInventory,
   reduceInventory,
   restoreInventory,
   getInventory,

@@ -3,7 +3,7 @@ import Order from "../models/Order.js";
 /**
  * Create a new order after successful payment
  */
-export const createOrder = async (orderData) => {
+export const createOrder = async (orderData, options = {}) => {
   try {
     // Generate orderId if not provided
     if (!orderData.orderId) {
@@ -19,6 +19,10 @@ export const createOrder = async (orderData) => {
     return order;
   } catch (error) {
     console.error("❌ Failed to save order:", error.message);
+    if (options.throwOnError) {
+      throw error;
+    }
+
     // Don't throw - payment already succeeded, we don't want to fail the response
     return null;
   }

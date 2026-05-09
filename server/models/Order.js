@@ -86,7 +86,6 @@ const OrderSchema = new mongoose.Schema(
       transactionId: {
         type: String,
         required: true,
-        index: true,
       },
       status: {
         type: String,
@@ -121,10 +120,11 @@ const OrderSchema = new mongoose.Schema(
   },
 );
 
-// Indexes for common queries (transactionId already indexed via index: true in schema)
+// Indexes for common queries (transactionId is unique via schema above)
 OrderSchema.index({ createdAt: -1 });
 OrderSchema.index({ status: 1 });
 OrderSchema.index({ "customer.email": 1 });
+OrderSchema.index({ "payment.transactionId": 1 }, { unique: true });
 
 const Order = mongoose.model("Order", OrderSchema);
 

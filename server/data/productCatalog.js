@@ -116,21 +116,36 @@ const productCatalog = {
   },
 };
 
-// Shipping cost (AUD cents)
-const SHIPPING_COST = 1000; // $10.00
+// Shipping costs (AUD cents)
+const SHIPPING_RATES = {
+  AU: 1000, // $10.00 AUD
+  US: 3000, // $30.00 AUD
+};
+
+export const normalizeShippingCountry = (country) => {
+  const normalized = String(country || "AU")
+    .trim()
+    .toUpperCase();
+  return normalized === "US" ? "US" : "AU";
+};
+
+export const getShippingCostCents = (country) => {
+  return SHIPPING_RATES[normalizeShippingCountry(country)];
+};
 
 /**
  * Calculate cart total from trusted product catalog
  * @param {Array} cartItems - Array of {id, quantity} from frontend
  * @returns {Object} - { subtotal, shipping, total, items }
  */
-export const calculateCartTotal = (cartItems) => {
+export const calculateCartTotal = (cartItems, options = {}) => {
   if (!Array.isArray(cartItems) || cartItems.length === 0) {
     throw new Error("Cart is empty");
   }
 
   let subtotal = 0;
   const validatedItems = [];
+  const shippingCountry = normalizeShippingCountry(options.shippingCountry);
 
   for (const item of cartItems) {
     const product = productCatalog[item.id];
@@ -147,17 +162,21 @@ export const calculateCartTotal = (cartItems) => {
       name: product.name,
       price: product.price,
       quantity: quantity,
+      sku: product.sku || `SKU-${product.id}`,
       total: (itemTotal / 100).toFixed(2),
     });
   }
 
-  const total = subtotal + SHIPPING_COST;
+  const shippingCost = getShippingCostCents(shippingCountry);
+  const total = subtotal + shippingCost;
 
   return {
     subtotal: (subtotal / 100).toFixed(2),
-    shipping: (SHIPPING_COST / 100).toFixed(2),
+    shipping: (shippingCost / 100).toFixed(2),
     total: (total / 100).toFixed(2),
     totalCents: total,
+    currency: "AUD",
+    shippingCountry,
     items: validatedItems,
   };
 };

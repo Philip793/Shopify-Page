@@ -44,9 +44,13 @@ The system was designed with clear separation between UI, state management, and 
 
 **Backend:**
 
-- **Node.js, Express**
+- Node.js, Express
+- MongoDB + Mongoose
+- JWT authentication
+- bcrypt password hashing
 - Stripe SDK
 - Braintree SDK
+- Helmet, rate limiting, input sanitisation and CORS protection
 - Environment-based secure credentials
 
 ---

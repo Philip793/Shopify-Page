@@ -1,21 +1,34 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext.js";
+import { useAuth } from "../context/AuthContext.js";
 import SEO from "./SEO.js";
+
+const USD_ESTIMATE_RATE = 0.66;
+
+const formatAudWithUsdEstimate = (amount, showUsdEstimate) => {
+  const aud = `$${amount.toFixed(2)} AUD`;
+  if (!showUsdEstimate) return aud;
+  return `${aud} (~$${(amount * USD_ESTIMATE_RATE).toFixed(2)} USD)`;
+};
 
 const OrderSummary = () => {
   const { cart, cartCount } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [shippingCountry, setShippingCountry] = useState("AU");
 
   // Calculate totals
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
-  const shipping = cart.length > 0 ? 10.0 : 0; // $10 shipping
+  const shipping =
+    cart.length > 0 ? (shippingCountry === "US" ? 30.0 : 10.0) : 0;
   const total = subtotal + shipping;
+  const showUsdEstimate = shippingCountry === "US";
 
   // Prepare cart items for backend
   const cartItems = cart.map((item) => ({
@@ -39,7 +52,14 @@ const OrderSummary = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cartItems }),
+          body: JSON.stringify({
+            cartItems,
+            shippingCountry,
+            customer: {
+              email: user?.email,
+              name: user?.name,
+            },
+          }),
         },
       );
 
@@ -53,6 +73,8 @@ const OrderSummary = () => {
       navigate("/checkout", {
         state: {
           clientSecret: data.clientSecret,
+          paymentIntentId: data.paymentIntentId,
+          pendingOrderId: data.pendingOrderId,
           orderSummary: data.orderSummary,
         },
       });
@@ -150,12 +172,28 @@ const OrderSummary = () => {
               {/* Shipping Info */}
               <div className="bg-white rounded-lg shadow-md mt-6 p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                  Shipping Information
+                  Shipping Destination
                 </h2>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <p>✓ Free shipping on orders over $100</p>
-                  <p>✓ Standard shipping: $10.00 (1-3 business days)</p>
-                  <p>✓ Express shipping available at checkout</p>
+                <div className="space-y-3 text-sm text-gray-600">
+                  <label className="block">
+                    <span className="block font-medium text-gray-700 mb-2">
+                      Country
+                    </span>
+                    <select
+                      value={shippingCountry}
+                      onChange={(event) =>
+                        setShippingCountry(event.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-burgundy-500 focus:outline-none focus:ring-2 focus:ring-burgundy-200"
+                    >
+                      <option value="AU">Australia</option>
+                      <option value="US">United States</option>
+                    </select>
+                  </label>
+                  <p>
+                    Prices are charged in AUD. USD estimates are approximate;
+                    your bank or payment provider may use a different rate.
+                  </p>
                 </div>
               </div>
             </div>
@@ -170,18 +208,26 @@ const OrderSummary = () => {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>
+                      {formatAudWithUsdEstimate(subtotal, showUsdEstimate)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
+                    <span>
+                      {formatAudWithUsdEstimate(shipping, showUsdEstimate)}
+                    </span>
                   </div>
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-lg font-bold text-gray-800">
                       <span>Total</span>
-                      <span>${total.toFixed(2)} AUD</span>
+                      <span>
+                        {formatAudWithUsdEstimate(total, showUsdEstimate)}
+                      </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Including GST</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Charged in AUD at checkout
+                    </p>
                   </div>
                 </div>
 
