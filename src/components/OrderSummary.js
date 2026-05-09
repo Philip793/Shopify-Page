@@ -74,95 +74,79 @@ const OrderSummary = () => {
   }));
 
   const handleProceedToCheckout = async () => {
-    if (cart.length === 0) {
-      setError("Your cart is empty");
-      return;
-    }
+  if (cart.length === 0) {
+    setError("Your cart is empty");
+    return;
+  }
 
-    if (!isAuthenticated()) {
-      navigate("/login", { state: { from: { pathname: "/order-summary" } } });
-      return;
-    }
+  if (!isAuthenticated()) {
+    navigate("/login", { state: { from: { pathname: "/order-summary" } } });
+    return;
+  }
 
-    const missingFields = getMissingAddressFields(shippingAddress);
-    if (missingFields.length > 0) {
-      setError("Please complete all required shipping address fields.");
-      return;
-    }
+  const missingFields = getMissingAddressFields(shippingAddress);
+  if (missingFields.length > 0) {
+    setError("Please complete all required shipping address fields.");
+    return;
+  }
 
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    try {
-      const saveAddress = await updateShippingAddress(shippingAddress);
-      if (!saveAddress.success) {
-        if (saveAddress.authExpired) {
-          navigate("/login", {
-            state: { from: { pathname: "/order-summary" } },
-          });
-          return;
-        }
-        throw new Error(saveAddress.error);
-      }
-      const savedUser = saveAddress.user || user;
-      const token = getToken();
+  try {
+    const saveAddress = await updateShippingAddress(shippingAddress);
 
-      // Fetch checkout session from backend with cart items
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL || "http://localhost:4242"}/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            cartItems,
-            shippingCountry,
-            customer: {
-              email: savedUser?.email,
-              name: shippingAddress.fullName || savedUser?.name,
-            },
-            shippingAddress,
-          }),
-        },
-      );
-
-      const data = await response.json();
-
-      if (response.status === 401) {
-        logout();
-        navigate("/login", { state: { from: { pathname: "/order-summary" } } });
+    if (!saveAddress.success) {
+      if (saveAddress.authExpired) {
+        navigate("/login", {
+          state: { from: { pathname: "/order-summary" } },
+        });
         return;
       }
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
+      throw new Error(saveAddress.error);
+    }
 
-      // Navigate to checkout with the session data
-      navigate("/checkout", {
-  state: {
-    clientSecret: data.clientSecret,
-    paymentIntentId: data.paymentIntentId,
-    pendingOrderId: data.pendingOrderId,
-    orderSummary: {
-      ...data.orderSummary,
+    const savedUser = saveAddress.user || user;
+
+    const checkoutOrderSummary = {
+      items: cart.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price.toFixed(2),
+        quantity: item.quantity,
+        total: (item.price * item.quantity).toFixed(2),
+        sku: item.sku || `SKU-${item.id}`,
+      })),
+
+      cartItems,
+
+      subtotal: subtotal.toFixed(2),
+      shipping: shipping.toFixed(2),
+      total: total.toFixed(2),
+      currency: "AUD",
+      shippingCountry,
+
       customer: {
         email: savedUser?.email,
         name: shippingAddress.fullName || savedUser?.name,
       },
+
       shippingAddress,
-    },
-  },
-});
-    } catch (err) {
-      console.error("Checkout error:", err);
-      setError(err.message || "Failed to start checkout. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    navigate("/checkout", {
+      state: {
+        orderSummary: checkoutOrderSummary,
+      },
+    });
+  } catch (err) {
+    console.error("Checkout preparation error:", err);
+    setError(err.message || "Failed to continue to checkout. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleAddressChange = (field, value) => {
     setShippingAddress((current) => ({

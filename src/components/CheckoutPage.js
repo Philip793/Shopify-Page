@@ -125,18 +125,27 @@ const CheckoutPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { cart } = useCart();
-  const {
-    isAuthenticated,
-    loading: authLoading,
-    getToken,
-    user,
-  } = useAuth();
+const {
+  isAuthenticated,
+  loading: authLoading,
+  getToken,
+  user,
+  logout,
+} = useAuth();
   const isLoggedIn = isAuthenticated();
 
   // Get checkout session data from OrderSummary page
-  const clientSecret = location.state?.clientSecret;
-  const orderSummary = location.state?.orderSummary;
-  const pendingOrderId = location.state?.pendingOrderId;
+const initialOrderSummary = location.state?.orderSummary;
+
+const [orderSummary, setOrderSummary] = useState(initialOrderSummary);
+const [clientSecret, setClientSecret] = useState(
+  location.state?.clientSecret || null,
+);
+const [pendingOrderId, setPendingOrderId] = useState(
+  location.state?.pendingOrderId || null,
+);
+const [stripeLoading, setStripeLoading] = useState(false);
+const [stripeError, setStripeError] = useState(null);
 
   // Braintree state - MUST be before any early returns
   const [braintreeToken, setBraintreeToken] = useState(null);
@@ -145,11 +154,11 @@ const CheckoutPage = () => {
   const [error, setError] = useState(null);
 
   // Redirect if no checkout session (user navigated directly to /checkout)
-  useEffect(() => {
-    if ((!authLoading && !clientSecret) || !orderSummary) {
-      navigate("/order-summary");
-    }
-  }, [authLoading, clientSecret, orderSummary, navigate]);
+useEffect(() => {
+  if (!authLoading && !orderSummary) {
+    navigate("/order-summary");
+  }
+}, [authLoading, orderSummary, navigate]);
 
   // Fetch Braintree token on mount
   useEffect(() => {
@@ -184,7 +193,79 @@ const CheckoutPage = () => {
       />
     );
   }
+const createStripePaymentIntent = async () => {
+  if (!orderSummary) return;
 
+  setStripeLoading(true);
+  setStripeError(null);
+
+  try {
+    const token = getToken();
+
+    const cartItemsForBackend =
+      orderSummary.cartItems ||
+      cart.map((item) => ({
+        id: item.id,
+        quantity: item.quantity,
+      }));
+
+    const response = await fetch(
+      `${process.env.REACT_APP_API_URL || "http://localhost:4242"}/create-checkout-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          cartItems: cartItemsForBackend,
+          shippingCountry: orderSummary.shippingCountry || "AU",
+          customer: {
+            email: orderSummary.customer?.email || user?.email,
+            name:
+              orderSummary.shippingAddress?.fullName ||
+              orderSummary.customer?.name ||
+              user?.name,
+          },
+          shippingAddress: orderSummary.shippingAddress,
+        }),
+      },
+    );
+
+    const data = await response.json();
+
+    if (response.status === 401) {
+      logout();
+      navigate("/login", { state: { from: { pathname: "/checkout" } } });
+      return;
+    }
+
+    if (!response.ok || data.error) {
+      throw new Error(data.error || "Failed to start card payment.");
+    }
+
+    setClientSecret(data.clientSecret);
+    setPendingOrderId(data.pendingOrderId);
+
+    setOrderSummary({
+      ...data.orderSummary,
+      cartItems: cartItemsForBackend,
+      customer: {
+        email: orderSummary.customer?.email || user?.email,
+        name:
+          orderSummary.shippingAddress?.fullName ||
+          orderSummary.customer?.name ||
+          user?.name,
+      },
+      shippingAddress: orderSummary.shippingAddress,
+    });
+  } catch (err) {
+    console.error("Stripe checkout error:", err);
+    setStripeError(err.message || "Failed to prepare card payment.");
+  } finally {
+    setStripeLoading(false);
+  }
+};
   // Handle Braintree (PayPal) payment with cart data
   const handleBraintreePurchase = async () => {
     if (!braintreeInstance || cart.length === 0) return;
@@ -226,11 +307,12 @@ const CheckoutPage = () => {
       if (data.success) {
         // Navigate to success page with order details
         navigate("/checkout/success", {
-          state: {
-            orderSummary: data.orderSummary,
-            transactionId: data.transactionId,
-          },
-        });
+  state: {
+    orderSummary: data.orderSummary,
+    transactionId: data.transactionId,
+    orderId: data.orderId,
+  },
+});
       } else {
         // Navigate to cancel page with error
         navigate("/checkout/cancel", { state: { error: data.error } });
@@ -349,16 +431,41 @@ const CheckoutPage = () => {
 
               {/* Stripe Section */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                  Pay with Card
-                </h2>
-                <Elements options={options} stripe={stripePromise}>
-                  <StripeCheckoutForm
-                    orderSummary={orderSummary}
-                    pendingOrderId={pendingOrderId}
-                  />
-                </Elements>
-              </div>
+  <h2 className="text-lg font-semibold text-gray-800 mb-4">
+    Pay with Card
+  </h2>
+
+  {!clientSecret ? (
+    <>
+      <p className="text-sm text-gray-600 mb-4">
+        Select this option to securely pay by card.
+      </p>
+
+      <button
+        onClick={createStripePaymentIntent}
+        disabled={stripeLoading}
+        className="w-full py-3 bg-burgundy-600 text-white rounded-md hover:bg-burgundy-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
+      >
+        {stripeLoading
+          ? "Preparing card payment..."
+          : `Continue with Card - ${orderSummary?.total || ""} AUD`}
+      </button>
+
+      {stripeError && (
+        <div className="mt-3 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+          {stripeError}
+        </div>
+      )}
+    </>
+  ) : (
+    <Elements options={{ clientSecret, appearance }} stripe={stripePromise}>
+      <StripeCheckoutForm
+        orderSummary={orderSummary}
+        pendingOrderId={pendingOrderId}
+      />
+    </Elements>
+  )}
+</div>
             </div>
           </div>
         </div>
