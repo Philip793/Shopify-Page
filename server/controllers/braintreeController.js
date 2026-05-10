@@ -1,4 +1,8 @@
 import gateway from "../config/braintree.js";
+import {
+  sendOrderConfirmationEmailOnce,
+  sendMerchantOrderNotificationEmail,
+} from "../services/emailService.js";
 import { calculateCartTotal } from "../data/productCatalog.js";
 import { createOrder } from "./orderController.js";
 import {
@@ -152,8 +156,20 @@ export const checkoutWithCart = async (req, res) => {
     };
 
     // Save order to database
-    const order = await createOrder(orderData);
+    const order = await createOrder(orderData, { throwOnError: true });
+    await sendOrderConfirmationEmailOnce(order);
 
+try {
+  await sendMerchantOrderNotificationEmail(order);
+} catch (emailError) {
+  console.error("Merchant order notification failed:", {
+    orderId: order.orderId,
+    error: emailError.message,
+  });
+}
+if (order) {
+  await sendOrderConfirmationEmailOnce(order);
+}
     // Convert reserved inventory into sold inventory
     const inventoryResult = await confirmInventory(cartItems);
 

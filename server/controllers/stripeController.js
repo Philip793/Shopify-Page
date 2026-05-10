@@ -8,7 +8,10 @@ import {
   confirmInventory,
   releaseInventory,
 } from "../services/inventoryService.js";
-import { sendOrderConfirmationEmailOnce } from "../services/emailService.js";
+import {
+  sendOrderConfirmationEmailOnce,
+  sendMerchantOrderNotificationEmail,
+} from "../services/emailService.js";
 
 const PENDING_ORDER_TTL_MINUTES = 30;
 
@@ -273,6 +276,14 @@ export const confirmPayment = async (req, res) => {
     if (!order && pendingOrder && paymentIntent.status === "succeeded") {
       order = await finalizePendingOrder(pendingOrder, paymentIntent);
       await sendOrderConfirmationEmailOnce(order);
+      try {
+  await sendMerchantOrderNotificationEmail(order);
+} catch (emailError) {
+  console.error("Merchant order notification failed:", {
+    orderId: order.orderId,
+    error: emailError.message,
+  });
+}
     }
 
     res.json({

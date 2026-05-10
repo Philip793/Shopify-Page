@@ -183,3 +183,138 @@ export const sendOrderConfirmationEmailOnce = async (order) => {
     return { sent: false, error: error.message };
   }
 };
+export const sendMerchantOrderNotificationEmail = async (order) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.ORDER_EMAIL_FROM;
+  const merchantEmail = process.env.MERCHANT_ORDER_EMAIL || process.env.SUPPORT_EMAIL;
+
+  if (!apiKey || !from) {
+    throw new Error("Merchant order email is not configured");
+  }
+
+  if (!merchantEmail) {
+    throw new Error("MERCHANT_ORDER_EMAIL or SUPPORT_EMAIL must be configured");
+  }
+
+  const itemsText = order.items
+    .map(
+      (item) =>
+        `- ${item.name} x ${item.quantity}: ${formatMoney(
+          item.price * item.quantity,
+          order.currency,
+        )}`,
+    )
+    .join("\n");
+
+  const itemsHtml = order.items
+    .map(
+      (item) => `
+        <tr>
+          <td>${escapeHtml(item.name)}</td>
+          <td>${escapeHtml(item.quantity)}</td>
+          <td>${escapeHtml(formatMoney(item.price, order.currency))}</td>
+          <td>${escapeHtml(
+            formatMoney(item.price * item.quantity, order.currency),
+          )}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const addressLines = buildAddressLines(order.shippingAddress);
+  const addressText = addressLines.join("\n");
+  const addressHtml = addressLines
+    .map((line) => `<div>${escapeHtml(line)}</div>`)
+    .join("");
+
+  const subject = `New order ${order.orderId} - ${formatMoney(
+    order.total,
+    order.currency,
+  )}`;
+
+  const text = [
+    "New order received",
+    "",
+    `Order ID: ${order.orderId}`,
+    `Customer name: ${order.customer?.name || "Not provided"}`,
+    `Customer email: ${order.customer?.email || "Not provided"}`,
+    `Phone: ${order.shippingAddress?.phone || "Not provided"}`,
+    "",
+    "Items",
+    itemsText,
+    "",
+    `Subtotal: ${formatMoney(order.subtotal, order.currency)}`,
+    `Shipping: ${formatMoney(order.shipping, order.currency)}`,
+    `Total: ${formatMoney(order.total, order.currency)}`,
+    "",
+    `Payment provider: ${order.payment?.provider || "Unknown"}`,
+    `Transaction ID: ${order.payment?.transactionId || "Unknown"}`,
+    "",
+    "Shipping address",
+    addressText,
+    "",
+    "Action required: pack and fulfil this order.",
+  ].join("\n");
+
+  const html = `
+    <h1>New order received</h1>
+
+    <h2>Order ${escapeHtml(order.orderId)}</h2>
+
+    <p><strong>Customer:</strong> ${escapeHtml(order.customer?.name || "Not provided")}</p>
+    <p><strong>Email:</strong> ${escapeHtml(order.customer?.email || "Not provided")}</p>
+    <p><strong>Phone:</strong> ${escapeHtml(order.shippingAddress?.phone || "Not provided")}</p>
+
+    <h2>Items</h2>
+    <table border="1" cellpadding="8" cellspacing="0">
+      <thead>
+        <tr>
+          <th align="left">Item</th>
+          <th align="left">Qty</th>
+          <th align="left">Unit price</th>
+          <th align="left">Line total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsHtml}
+      </tbody>
+    </table>
+
+    <h2>Totals</h2>
+    <p><strong>Subtotal:</strong> ${escapeHtml(formatMoney(order.subtotal, order.currency))}</p>
+    <p><strong>Shipping:</strong> ${escapeHtml(formatMoney(order.shipping, order.currency))}</p>
+    <p><strong>Total:</strong> ${escapeHtml(formatMoney(order.total, order.currency))}</p>
+
+    <h2>Payment</h2>
+    <p><strong>Provider:</strong> ${escapeHtml(order.payment?.provider || "Unknown")}</p>
+    <p><strong>Transaction ID:</strong> ${escapeHtml(order.payment?.transactionId || "Unknown")}</p>
+
+    <h2>Shipping address</h2>
+    ${addressHtml}
+
+    <p><strong>Action required:</strong> pack and fulfil this order.</p>
+  `;
+
+  const response = await fetch(RESEND_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: merchantEmail,
+      reply_to: order.customer?.email || process.env.SUPPORT_EMAIL || from,
+      subject,
+      html,
+      text,
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Merchant email provider rejected request: ${body}`);
+  }
+
+  return response.json();
+};
