@@ -326,7 +326,7 @@ const createStripePaymentIntent = async () => {
 
   // Stripe Elements options
   const appearance = { theme: "stripe" };
-  const options = { clientSecret, appearance };
+ 
 
 if (!orderSummary) {
   return null;

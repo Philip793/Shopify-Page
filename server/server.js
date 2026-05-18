@@ -55,7 +55,7 @@ if (process.env.NODE_ENV === "production") {
     next();
   });
 } else {
-  app.set("trust proxy", "loopback"); // Trust loopback only (localhost)
+  app.set("trust proxy", "loopback"); 
 }
 
 // Security Middleware

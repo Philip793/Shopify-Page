@@ -30,7 +30,7 @@ const getMissingAddressFields = (address) => {
 
 const OrderSummary = () => {
   const { cart, cartCount } = useCart();
-  const { user, getToken, isAuthenticated, logout, updateShippingAddress } =
+  const { user, isAuthenticated, updateShippingAddress } =
     useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);

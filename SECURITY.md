@@ -4,7 +4,7 @@
 
 ### 1. **Authentication & Authorization**
 
-- ✅ JWT-based authentication with 7-day expiration
+- ✅ JWT-based authentication with token expiration controls
 - ✅ Password hashing with bcrypt (salt rounds: 10)
 - ✅ Role-based access control (user/admin)
 - ✅ Protected routes with middleware (`authenticate`, `requireAdmin`)
@@ -82,41 +82,21 @@ Use the secure endpoints above which calculate totals server-side.
 
 ---
 
-## 🚨 Production Security Checklist
+## 🚨 Production Security Considerations
 
-### HTTPS (CRITICAL)
+### HTTPS 
 
-**Current:** HTTPS enforcement added in production (redirects HTTP to HTTPS)
-**Required for Production:**
+**Current:** Local development uses HTTP (`localhost`) for testing purposes
+**Production Approach:**
+- HTTPS will be enforced through hosting providers (Netlify frontend and Railway backend)
+- HTTP requests are automatically redirected to HTTPS
+- Sensitive information such as authentication data and payment interactions should only occur over encrypted connections
 
-```javascript
-// Option 1: Use a reverse proxy (Nginx, Apache)
-// Nginx config:
-server {
-    listen 443 ssl;
-    server_name yourdomain.com;
+**Notes:**
 
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-
-    location / {
-        proxy_pass http://localhost:4242;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-
-// Option 2: Direct HTTPS in Node.js (not recommended for production)
-import https from 'https';
-import fs from 'fs';
-
-const options = {
-  key: fs.readFileSync('path/to/key.pem'),
-  cert: fs.readFileSync('path/to/cert.pem')
-};
-
-https.createServer(options, app).listen(443);
-```
+- Local development environments typically use HTTP
+- Production deployments should always use HTTPS-enabled infrastructure
+- Reverse proxy solutions (e.g. Nginx) may be used in larger environments requiring custom infrastructure
 
 ### Environment Variables (.env)
 
@@ -186,16 +166,16 @@ TRUST_PROXY=true  # If behind reverse proxy
 
 ## 🔍 Security Testing
 
-### Test Rate Limiting
+### Local Test Rate Limiting
 
 ```bash
 curl -X POST http://localhost:4242/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@test.com","password":"wrong"}'
-# Repeat 10+ times - should get "Too many requests"
+# Repeat 10+ times - should return "Too many requests"
 ```
 
-### Test NoSQL Injection
+### Local Test NoSQL Injection
 
 ```bash
 curl -X POST http://localhost:4242/auth/login \
@@ -204,7 +184,7 @@ curl -X POST http://localhost:4242/auth/login \
 # Should be sanitized and fail safely
 ```
 
-### Test XSS Prevention
+### Local Test XSS Prevention
 
 ```bash
 curl -X POST http://localhost:4242/auth/register \
@@ -218,7 +198,7 @@ curl -X POST http://localhost:4242/auth/register \
 ## 📊 Security Headers Verification
 
 Run this to verify headers:
-
+### Local development health check
 ```bash
 curl -I http://localhost:4242/health
 ```
@@ -234,19 +214,22 @@ Expected headers:
 
 ## 🛡️ Vulnerability Status
 
-| Vulnerability       | Status            | Protection                                                 |
-| ------------------- | ----------------- | ---------------------------------------------------------- |
-| Brute Force         | ✅ Mitigated      | Rate limiting                                              |
-| NoSQL Injection     | ✅ Mitigated      | mongo-sanitize + validation                                |
-| XSS                 | ✅ Mitigated      | Helmet CSP + input escaping                                |
-| Clickjacking        | ✅ Mitigated      | X-Frame-Options                                            |
-| HPP                 | ✅ Mitigated      | hpp middleware                                             |
-| Information Leakage | ✅ Mitigated      | Error handling + helmet                                    |
-| Payment Tampering   | ✅ Mitigated      | Server-side calculation, legacy endpoints disabled in prod |
-| CSRF                | ⚠️ Low Risk       | JWT in localStorage (stateless)                            |
-| MITM                | ❌ Requires HTTPS | **Enable HTTPS in production**                             |
+| Vulnerability                          | Status            | Protection                                                  |
+| -------------------                    | ----------------- | ----------------------------------------------------------  |
+| Brute Force                            | ✅ Mitigated      | Rate limiting                                              |
+| NoSQL Injection                        | ✅ Mitigated      | mongo-sanitize + validation                                |
+| XSS                                    | ✅ Mitigated      | Helmet CSP + input escaping                                |
+| Clickjacking                           | ✅ Mitigated      | X-Frame-Options                                            |
+| HPP                                    | ✅ Mitigated      | hpp middleware                                             |
+| Information Leakage                    | ✅ Mitigated      | Error handling + helmet                                    |
+| Payment Tampering                      | ✅ Mitigated      | Server-side calculation, legacy endpoints disabled in prod |
+| CSRF                                   | ⚠️ Considered     |  Stateless JWT implementation and controlled API design    |
+| Transport Security (MITM reduction)    | ✅ Addressed | HTTPS enforced through hosting providers                        |
 
 ---
+## ⚙️ Security Design Philosophy
+
+This project prioritises security controls at multiple layers rather than relying on a single mechanism. Authentication, request validation, sanitisation, rate limiting, server-side payment processing, and secure configuration management are used together to reduce risk and improve system reliability.
 
 ## 📝 Last Updated
 
@@ -254,9 +237,9 @@ May 2026
 
 ## 🔄 Next Steps for Production
 
-1. [ ] Enable HTTPS with valid SSL certificate
-2. [ ] Set up reverse proxy (Nginx)
-3. [ ] Configure MongoDB Atlas with auth
-4. [ ] Set up monitoring (Sentry, LogRocket)
-5. [ ] Regular security audits (`npm audit`)
-6. [ ] Backup strategy for database
+1. [ ] Connect production domain
+2. [ ] Configure production environment variables
+3. [ ] Set up monitoring (Sentry, LogRocket)
+4. [ ] Implement automated testing
+5. [ ] Regular dependency/security audits (`npm audit`)
+6. [ ] Database backup strategy

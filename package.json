@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "proxy": "http://localhost:4242",
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@shopify/app-bridge-react": "^4.2.7",
