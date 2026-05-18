@@ -303,3 +303,16 @@ npm start
 - Currently preparing for live deployment
 
 ---
+## Engineering Decisions
+
+### Server-side payment calculation
+Cart totals are calculated on the server rather than trusting client-side values. This prevents users from manipulating prices, quantities, or totals in the browser before checkout.
+
+### Payment logic kept off the frontend
+Stripe and Braintree payment handling is managed through backend routes so secret keys, transaction creation, validation, and order confirmation are not exposed to the client.
+
+### Security considerations
+The project uses environment variables for credentials, server-side validation for checkout data, input sanitisation, and backend-controlled payment flows to reduce the risk of tampered requests or exposed secrets.
+
+### Trade-offs
+Moving payment logic to the backend adds complexity, more API handling, and extra error states to manage, but it creates a safer and more maintainable checkout flow. For a commerce application, this trade-off is necessary because payment integrity matters more than frontend simplicity.
