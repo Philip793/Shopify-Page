@@ -2,17 +2,11 @@
 
 **React + Node.js | Stripe + Braintree Integration**
 
-## Solo-developed full-stack checkout system designed to replace third-party marketplace dependence. Architected a modular React frontend and secure Node.js backend integrating Stripe and Braintree for multi-provider payment processing and scalable transaction handling.
+**Solo-developed full-stack checkout system designed to replace third-party marketplace dependence.**
 
-## Overview
+Architected a modular React frontend and secure Node.js backend integrating Stripe and Braintree for multi-provider payment processing and scalable transaction handling.
 
-This project is a custom e-commerce solution for an early-stage merchant transitioning from Etsy to an independent storefront. The goal was to provide greater control over branding, customer experience, and payment processing while designing the system to support future growth.
-
-I developed the full-stack platform independently, designing modular React components and implementing secure Node.js backend endpoints to process multi-method payments.
-
-The system was designed with clear separation between UI, state management, and payment orchestration layers, enabling maintainability, extensibility, and future integration of additional payment providers or services.
-
-## This project demonstrates production-style payment architecture, secure credential handling, and scalable component design beyond tutorial-level implementations.
+This project demonstrates production-style payment architecture, secure credential handling, and scalable component design beyond tutorial-level implementations.
 
 ## Project Goals
 
@@ -84,6 +78,17 @@ The system was designed with clear separation between UI, state management, and 
 4. Payment confirmation or error is returned to the UI
 
 ---
+
+## Screenshots
+
+### Homepage
+![Homepage](docs/images/homepage.png)
+
+### Product Page
+![Product](docs/images/product-page.png)
+
+### Checkout
+![Checkout](docs/images/checkout.png)
 
 ## Project Structure
 
@@ -285,15 +290,43 @@ npm start
 - Payment secrets are never exposed to the frontend
 - Tokenized payment flows using official Stripe and Braintree SDKs
 - Server-side handling of sensitive transaction logic
-- Architecture designed to support future high-volume transaction growth
+- Architecture designed with scalability and future extension of payment and order services in mind
 
 ---
+## Live Demo
 
-## Deployment (In Progress)
+Deployment currently being finalised.
 
-- Environment variable configuration in production
-- Secure HTTPS payment handling
-- Scalable backend hosting
+Demo URL:
+Coming soon
+
+## Deployment 
+
+Frontend and backend deployment are currently being finalised for live usage.
+
+Planned production architecture:
+
+Frontend:
+Netlify
+
+Backend:
+Railway
+
+Database:
+MongoDB Atlas
+
+Production deployment includes:
+
+- HTTPS enforcement
+- Environment-based configuration
+- Secure credential handling
+- Scalable cloud-hosted infrastructure
+
+## Technical Challenges
+
+- Designing secure server-side payment flows without exposing sensitive operations
+- Supporting multiple payment providers within a unified checkout experience
+- Maintaining separation between UI, business logic, and payment orchestration
 
 ## Future Enhancements
 
