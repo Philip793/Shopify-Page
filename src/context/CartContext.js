@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 // -----------------------------
 // Cart Context
@@ -12,8 +12,18 @@ const CartContext = createContext();
 // across all child components.
 // -----------------------------
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]); // Holds all cart items
-
+  const [cart, setCart] = useState(() => {
+  try {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  } catch (error) {
+    console.error("Failed to load cart:", error);
+    return [];
+  }
+}); // Holds all cart items
+useEffect(() => {
+  localStorage.setItem("cart", JSON.stringify(cart));
+}, [cart]);
   // -----------------------------
   // addToCart
   // Adds a product to the cart. If product exists, increment quantity.
@@ -48,9 +58,9 @@ export const CartProvider = ({ children }) => {
   // Clears all items from the cart (used after successful checkout)
   // -----------------------------
   const clearCart = () => {
-    setCart([]);
-  };
-
+  localStorage.removeItem("cart");
+  setCart([]);
+};
   // -----------------------------
   // cartCount
   // Returns total number of items in the cart
