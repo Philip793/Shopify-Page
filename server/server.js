@@ -58,17 +58,34 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", "loopback"); 
 }
 
-// Security Middleware
-
-// 1. Helmet - Security headers (XSS, clickjacking, etc.)
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
+
+        scriptSrc: [
+          "'self'",
+          "https://js.stripe.com",
+          "'wasm-unsafe-eval'",
+        ],
+
+        frameSrc: [
+          "'self'",
+          "https://js.stripe.com",
+          "https://hooks.stripe.com",
+        ],
+
+        connectSrc: [
+          "'self'",
+          "https://api.stripe.com",
+          "https://m.stripe.network",
+          "https://r.stripe.com",
+        ],
+
         imgSrc: ["'self'", "data:", "https:"],
+
+        styleSrc: ["'self'", "'unsafe-inline'"],
       },
     },
     crossOriginEmbedderPolicy: false,
