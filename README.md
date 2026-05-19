@@ -82,13 +82,16 @@ This project demonstrates production-style payment architecture, secure credenti
 ## Screenshots
 
 ### Homepage
-![Homepage](docs/images/homepage.png)
+![Homepage](docs/image/homepage.png)
 
 ### Product Page
-![Product](docs/images/product-page.png)
+![Product](docs/image/productpage.png)
+
+### Cart Page
+![Product](docs/image/cart.png)
 
 ### Checkout
-![Checkout](docs/images/checkout.png)
+![Checkout](docs/image/checkout.png)
 
 ## Project Structure
 
@@ -295,10 +298,9 @@ npm start
 ---
 ## Live Demo
 
-Deployment currently being finalised.
 
-Demo URL:
-Coming soon
+
+Demo URL:https://remarkable-alfajores-b4efb2.netlify.app
 
 ## Deployment 
 
